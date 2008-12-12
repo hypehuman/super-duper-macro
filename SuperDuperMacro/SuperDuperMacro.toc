@@ -1,0 +1,8 @@
+## Interface: 30000
+## Title : Super Duper Macro
+## Notes: This AddOn allows users to make incredibly long macros.
+## Author: hypehuman
+## Version: 1.1
+## SavedVariables: sdm_macros, sdm_version
+SuperDuperMacro.xml
+SuperDuperMacro.lua
