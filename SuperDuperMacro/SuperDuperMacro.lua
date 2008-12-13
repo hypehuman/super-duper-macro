@@ -9,7 +9,6 @@ function sdm_SlashHandler(command)
 end
 SlashCmdList["SUPERDUPERMACRO"] = sdm_SlashHandler;
 SLASH_SUPERDUPERMACRO1 = "/sdm";
-
 function sdm_MakeMacroFrame(name, text)
 	CreateFrame("Button", name, nil, "SecureActionButtonTemplate")
 	temp=getglobal(name)
@@ -19,7 +18,6 @@ function sdm_MakeMacroFrame(name, text)
 --	ChatFrame1:AddMessage("Creating frame \""..name.."\" with macrotext\n\""..text.."\"\n(length "..string.len(text)..")")
 	if string.len(text)>sdm_charLimit then ChatFrame1:AddMessage("The following line is "..(string.len(text)-sdm_charLimit).." characters too long:\n"..text) end
 end
-
 function sdm_MakeBlizzardMacro(name, text, perCharacter)
 --	ChatFrame1:AddMessage("Creating macro \""..name.."\" with text\n\""..text.."\"\n(length "..string.len(text)..")")
 	index=GetMacroIndexByName(name)
@@ -29,14 +27,12 @@ function sdm_MakeBlizzardMacro(name, text, perCharacter)
 		EditMacro(index, name, nil, text, perCharacter)
 	end
 end
-
 function sdm_GetLinkText(nextName)
 	return "\n/click [btn:5]"..nextName.." Button5;[btn:4]"..nextName.." Button4;[btn:3]"..nextName.." MiddleButton;[btn:2]"..nextName.." RightButton;"..nextName
 end
-
 function sdm_updateCurrentEdit(setTo)
 	if setTo then sdm_currentEdit = setTo end
-	if getn(sdm_macros) then
+	if getn(sdm_macros)>0 then
 		if not sdm_currentEdit or sdm_currentEdit<1 then
 			sdm_currentEdit = 1
 		elseif sdm_currentEdit > getn(sdm_macros) then
@@ -49,7 +45,6 @@ function sdm_updateCurrentEdit(setTo)
 		sdm_editFrameMenuFrame_current:Hide()
 	end
 end
-
 function sdm_SetUpMacro(type, number, name, text, perCharacter)
 	frameNum=1
 	linkText=sdm_GetLinkText("s"..number.."_"..(frameNum+1))
@@ -111,7 +106,6 @@ function sdm_SetUpMacro(type, number, name, text, perCharacter)
 		sdm_MakeMacroFrame(frameName, thisFrameText)
 	end
 end
-
 function sdm_DoAllMacros()
 	infoString=""
 	for i=1,getn(sdm_macros) do
@@ -126,9 +120,7 @@ function sdm_DoAllMacros()
 	sdm_editFrameMenuFrame_macroInfo:SetText(infoString)
 	sdm_updateCurrentEdit()
 end
-
 sdm_globalsLoaded=0
-
 local EventFrame = CreateFrame("Frame")
 EventFrame:RegisterEvent("VARIABLES_LOADED")
 EventFrame:RegisterEvent("UPDATE_MACROS")
@@ -145,16 +137,10 @@ EventFrame:SetScript("OnEvent", function ()
 		end
 	end
 end)
-
-
 sdm_charLimit=1023 --the number of characters allowed per frame
-
-
 function sdm_About()
 	DEFAULT_CHAT_FRAME:AddMessage("Super Duper Macro by hypehuman. Version "..sdm_version..". Check for updates at www.wowinterface.com")
 end
-
-
 function sdm_MenuFrameButtonClicked()
 	if this:GetName()=="sdm_editFrameMenuFrame_NewButton" then
 		sdm_newFrame:Show()
@@ -176,10 +162,8 @@ function sdm_MenuFrameButtonClicked()
 	sdm_editFrameMenuFrame_numberInput:SetText("")
 	sdm_editFrameMenuFrame_numberInput:ClearFocus()
 end
-
-
 function sdm_saveConfirmationBox(postponed)
-	if sdm_macros[sdm_currentEdit][3]==sdm_editFrameEditScrollFrameText:GetText() then
+	if sdm_currentEdit==0 or sdm_macros[sdm_currentEdit][3]==sdm_editFrameEditScrollFrameText:GetText() then
 		RunScript(postponed)
 	else
 		StaticPopupDialogs["SDM_CONFIRM"] = {
@@ -197,15 +181,16 @@ function sdm_saveConfirmationBox(postponed)
 		StaticPopup_Show("SDM_CONFIRM"):SetPoint("CENTER", "sdm_editFrame", "CENTER")
 	end
 end
-
-
 function sdm_showMacroEditText(index)
-	textToShow=sdm_macros[index][3]
-	if textToShow==nil or textToShow=="" then textToShow="# Enter macro text here." end
+	if sdm_currentEdit==0 then
+		textToShow=""
+	else
+		textToShow=sdm_macros[index][3]
+	end
 	sdm_editFrameEditScrollFrameText:SetText(textToShow)
 end
-
 function sdm_deleteMacro(num)
+	if sdm_currentEdit==0 then return end
 	if sdm_macros[num][1]=="b" then
 		DeleteMacro(sdm_macros[num][2])
 	end
@@ -215,36 +200,32 @@ function sdm_deleteMacro(num)
 	sdm_DoAllMacros()
 	sdm_showMacroEditText(sdm_currentEdit)
 end
-
 function sdm_getCurrentLink()
+	if sdm_currentEdit==0 then return end
 	if sdm_macros[sdm_currentEdit][1]=="b" then
 		PickupMacro(sdm_macros[sdm_currentEdit][2])
 	elseif sdm_macros[sdm_currentEdit][1]=="f" then
 		DEFAULT_CHAT_FRAME:AddMessage("To link to this macro, use \"/click "..sdm_macros[sdm_currentEdit][2].."\"")
 	end
 end
-
 function sdm_revertCurrent()
+	if sdm_currentEdit==0 then return end
 	if sdm_macros[sdm_currentEdit][3]==nil or sdm_macros[sdm_currentEdit][3]=="" then sdm_macros[sdm_currentEdit][3]="# Enter macro text here." end
 	sdm_editFrameEditScrollFrameText:SetText(sdm_macros[sdm_currentEdit][3])
-end
-
+end
 function sdm_Quit()
 	sdm_saveConfirmationBox("sdm_editFrame:Hide()")
 end
-
 function sdm_saveCurrent()
+	if sdm_currentEdit==0 then return end
 	sdm_macros[sdm_currentEdit][3]=sdm_editFrameEditScrollFrameText:GetText()
 	sdm_DoAllMacros()
 end
-
 function sdm_createButtonClicked()
+	if sdm_newFrame_input:GetText()=="" then return end
 	sdm_saveConfirmationBox("sdm_createButtonConfirmed()")
 end
-
-
 function sdm_createButtonConfirmed()
-	if sdm_newFrame_input:GetText()=="" then return end
 	table.insert(sdm_macros, {})
 	sdm_updateCurrentEdit(getn(sdm_macros))
 	if sdm_newFrame_RadioButton1:GetChecked() then
@@ -262,5 +243,4 @@ function sdm_createButtonConfirmed()
 	sdm_DoAllMacros()
 	sdm_showMacroEditText(sdm_currentEdit)
 end
-
 --sdm_macros is a table of tables.  Each table in it is three elements long, representing the type, name, text [, name, and realm] of each macro.  Type can be "b" for button macros or "f" for ones that don't have macro buttons, but instead just float invisibly and respond to /click

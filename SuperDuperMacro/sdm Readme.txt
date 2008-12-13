@@ -1,5 +1,5 @@
 Super Duper Macro
-version 1.1
+version 1.2
 by hypehuman
 
 Open the interface by typing /sdm
@@ -16,3 +16,5 @@ I haven't yet made the interface as pretty as I'd like (I'm just learning xml), 
 ¥ Add interface for putting in long scripts (basically just strings to be called with RunScript())
 
 Over the next few weeks, I'm going to be updating the interface and adding features.  If anyone has an idea, please let me know on wowinterface.com, or add it yourself and upload it :)  I haven't gotten a lot of feedback on this addon, but I know people have been using it.  So please let me know what you like about it and what you don't!
+
+Special thanks to the creators of Behaviors, from which I shamelessly copied many UI elements.
