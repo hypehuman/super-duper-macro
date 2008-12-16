@@ -20,28 +20,28 @@ function sdm_MakeMacroFrame(name, text)
 end
 function sdm_MakeBlizzardMacro(ID, name, text, perCharacter)
 --	DEFAULT_CHAT_FRAME:AddMessage("Creating macro \""..name.."\" with text\n\""..text.."\"\n(length "..string.len(text)..")")
-	local index = nil
-	local macrosToDelete = {}
-	for i=1,54 do
-		thisID=sdm_GetSdmID(i)
-		if thisID==ID then
-			index=i
-			break
-		end
-	end
-	if index then
-		EditMacro(index, name, nil, text, 1, perCharacter)
+	local macroIndex = sdm_GetMacroIndex(ID)
+	if macroIndex then
+		EditMacro(macroIndex, name, nil, text, 1, perCharacter)
 	else
 		CreateMacro(name, 1, text, perCharacter, 1)
 	end
 end
-function sdm_GetSdmID(macroID)
-	local thisMacroText=GetMacroBody(macroID)
+function sdm_GetSdmID(macroIndex)
+	local thisMacroText=GetMacroBody(macroIndex)
 	if thisMacroText and thisMacroText:sub(1,4)=="#sdm" then
 		return tonumber(thisMacroText:sub(5,thisMacroText:find("\n")-1))
 	else
 		return nil
 	end
+end
+function sdm_GetMacroIndex(sdmID)
+	for i=1,54 do
+		if sdm_GetSdmID(i)==sdmID then
+			return i
+		end
+	end
+	return nil
 end
 function sdm_GetLinkText(nextName)
 	return "\n/click [btn:5]"..nextName.." Button5;[btn:4]"..nextName.." Button4;[btn:3]"..nextName.." MiddleButton;[btn:2]"..nextName.." RightButton;"..nextName
@@ -224,7 +224,8 @@ function sdm_CompareVersions(firstString, secondString) --returns 1 if the first
 	local numbers = {}
 	while 1 do
 		for i=1, 2 do
-			local indexOfPeriod=strings[i]:find("%.")
+			if strings[i]==nil then strings[i]="0" end
+			local indexOfPeriod=(strings[i]):find("%.")
 			if indexOfPeriod==nil then
 				numbers[i]=strings[i]
 				strings[i]=nil
@@ -315,9 +316,9 @@ function sdm_ShowMacroEditText(index)
 	sdm_editFrame_editScrollFrame_text:SetText(textToShow)
 end
 function sdm_DeleteMacro(num)
-	if sdm_currentEdit==0 then return end
+	if num==0 then return end
 	if sdm_macros[num].type=="b" then
-		DeleteMacro(sdm_macros[num].name)
+		DeleteMacro(sdm_GetMacroIndex(sdm_macros[num].ID))
 	end
 	for i=num, getn(sdm_macros) do
 		sdm_macros[i]=sdm_macros[i+1]
@@ -328,14 +329,7 @@ end
 function sdm_GetCurrentLink()
 	if sdm_currentEdit==0 then return end
 	if sdm_macros[sdm_currentEdit].type=="b" then
-		local MacroID = nil
-		for i=1,54 do
-			if sdm_GetSdmID(i)==sdm_macros[sdm_currentEdit].ID then
-				MacroID=i
-				break
-			end
-		end
-		PickupMacro(MacroID)
+		PickupMacro(sdm_GetMacroIndex(sdm_macros[sdm_currentEdit].ID))
 	elseif sdm_macros[sdm_currentEdit].type=="f" then
 		DEFAULT_CHAT_FRAME:AddMessage("To run this macro, use \"/click "..sdm_macros[sdm_currentEdit].name.."\".")
 	elseif sdm_macros[sdm_currentEdit].type=="s" then
@@ -370,6 +364,13 @@ function sdm_CreateButtonClicked()
 		type="s"
 	end
 	perCharacter = sdm_newFrame_charspecRadio:GetChecked()
+	if not perChar and GetMacroInfo(36) then
+		DEFAULT_CHAT_FRAME:AddMessage("SDM: You already have 36 global macros.")
+		return
+	elseif perCharacter and GetMacroInfo(54) then
+		DEFAULT_CHAT_FRAME:AddMessage("SDM: You already have 18 character-specific macros.")
+		return
+	end
 	local conflict = sdm_DoesNameConflict(name, type, perCharacter)
 	if conflict then
 		DEFAULT_CHAT_FRAME:AddMessage("SDM: You may not have more than one of that type with the same name per character. (Conflicts with #"..conflict..")")
