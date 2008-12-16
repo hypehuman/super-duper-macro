@@ -73,15 +73,15 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<Frame name="$parentMenuFrame">
+			<Frame name="$parent_menuFrame">
 				<Size x="256" y="276" />
 				<Anchors>
 					<Anchor point="TOPLEFT">
 						<Offset x="26" y="-79" />
 					</Anchor>
 				</Anchors>
-				<Layers> 
-					<Layer level="ARTWORK"> 
+				<Layers>
+					<Layer level="ARTWORK">
 						<FontString name="$parent_instructionText" inherits="GameFontNormal" text="Or enter a number from the list below:">
 							<Anchors>
 								<Anchor point="LEFT" relativePoint="TOPLEFT">
@@ -110,59 +110,60 @@
 							</Anchors>
 						</FontString>
 					</Layer>
-				</Layers> 
+				</Layers>
 				<Frames>
-					<Button name="$parent_NewButton" inherits="UIPanelButtonTemplate" text="New">
-						<Size> 
-							<AbsDimension x="60" y="24"/> 
-						</Size> 
-						<Anchors> 
+					<Button name="$parent_newButton" inherits="UIPanelButtonTemplate" text="New">
+						<Size>
+							<AbsDimension x="60" y="24"/>
+						</Size>
+						<Anchors>
 							<Anchor point="TOPLEFT" />
-						</Anchors> 
+						</Anchors>
 						<Scripts>
 							<OnClick>sdm_MenuFrameButtonClicked()</OnClick>
 						</Scripts>
 					</Button>
-					<!-- InputBoxTemplate --> 
 					<EditBox name="$parent_numberInput" inherits="InputBoxTemplate" autoFocus="false" id="15">
-						<Size> 
-							<AbsDimension x="30" y="26"/> 
-						</Size> 
-						<Anchors> 
+						<Size>
+							<AbsDimension x="30" y="26"/>
+						</Size>
+						<Anchors>
 							<Anchor point="TOPLEFT">
 								<Offset>
 									<AbsDimension x="10" y="-70"/>
 								</Offset>
 							</Anchor>
-						</Anchors>           
+						</Anchors>
 						<Scripts>
 							<OnEscapePressed>
 								self:ClearFocus()
 							</OnEscapePressed>
+							<OnEnterPressed>
+								sdm_editFrame_menuFrame_selectButton:Click()
+							</OnEnterPressed>
 						</Scripts>
 					</EditBox>
-					<Button name="$parent_SelectButton" inherits="UIPanelButtonTemplate" text="Select" id="16">
-						<Size> 
-							<AbsDimension x="60" y="24"/> 
-						</Size> 
-						<Anchors> 
+					<Button name="$parent_selectButton" inherits="UIPanelButtonTemplate" text="Select" id="16">
+						<Size>
+							<AbsDimension x="60" y="24"/>
+						</Size>
+						<Anchors>
 							<Anchor point="TOPLEFT" relativeTo="$parent_numberInput" relativePoint="TOPRIGHT">
 								<Offset>
 									<AbsDimension x="10" y="0"/>
 								</Offset>
 							</Anchor>
-						</Anchors> 
+						</Anchors>
 						<Scripts>
 							<OnClick>sdm_MenuFrameButtonClicked()</OnClick>
 						</Scripts>
 					</Button>
 				</Frames>
 			</Frame>
-			<Button name="$parentQuitButton" inherits="UIPanelButtonTemplate" text="Quit">
-				<Size x="80" y="22" />
+			<Button name="$parent_quitButton" inherits="UIPanelCloseButton">
 				<Anchors>
-					<Anchor point="BOTTOMRIGHT">
-						<Offset x="-8" y="14" />
+					<Anchor point="TOPRIGHT">
+						<Offset x="3" y="-8" />
 					</Anchor>
 				</Anchors>
 				<Scripts>
@@ -171,56 +172,68 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="$parentSaveButton" inherits="UIPanelButtonTemplate" text="Save">
+			<Button name="$parent_saveButton" inherits="UIPanelButtonTemplate" text="Save">
 				<Size x="80" y="22" />
 				<Anchors>
-					<Anchor point="RIGHT" relativeTo="$parentQuitButton" relativePoint="LEFT" />
+					<Anchor point="BOTTOMRIGHT">
+						<Offset x="-8" y="14" />
+					</Anchor>
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						sdm_saveCurrent()
+						sdm_SaveCurrent()
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="$parentGetLinkButton" inherits="UIPanelButtonTemplate" text="Get Link">
+			<Button name="$parent_getLinkButton" inherits="UIPanelButtonTemplate" text="Get Link">
 				<Size x="80" y="22" />
 				<Anchors>
-					<Anchor point="RIGHT" relativeTo="$parentSaveButton" relativePoint="LEFT" />
+					<Anchor point="RIGHT" relativeTo="$parent_saveButton" relativePoint="LEFT" />
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						sdm_getCurrentLink()
+						sdm_GetCurrentLink()
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="$parentDeleteButton" inherits="UIPanelButtonTemplate" text="Delete">
+			<Button name="$parent_deleteButton" inherits="UIPanelButtonTemplate" text="Delete">
 				<Size x="80" y="22" />
-				<Anchors> 
-					<Anchor point="RIGHT" relativeTo="$parentGetLinkButton" relativePoint="LEFT" />
-				</Anchors> 
+				<Anchors>
+					<Anchor point="RIGHT" relativeTo="$parent_getLinkButton" relativePoint="LEFT" />
+				</Anchors>
 				<Scripts>
 					<OnClick>sdm_MenuFrameButtonClicked()</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="$parentAboutButton" text="?">
+			<Button name="$parent_linkToMacroFrame" inherits="UIPanelButtonTemplate" text="Default Macros">
 				<Size>
-					<AbsDimension x="32" y="32"/>
+					<AbsDimension x="120" y="19"/>
 				</Size>
-				<Anchors> 
-					<Anchor point="TOPRIGHT">
-						<Offset x="3" y="-8" />
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="68" y="-14" />
 					</Anchor>
-				</Anchors> 
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						sdm_SaveConfirmationBox("sdm_editFrame:Hide() sdm_newFrame:Hide() ShowMacroFrame()")
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="$parent_aboutButton" inherits="UIPanelButtonTemplate" text="About SDM">
+				<Size>
+					<AbsDimension x="120" y="19"/>
+				</Size>
+				<Anchors>
+					<Anchor point="RIGHT" relativeTo="$parent_quitButton" relativePoint="LEFT">
+						<Offset x="5" y="0" />
+					</Anchor>
+				</Anchors>
 				<Scripts>
 					<OnClick>sdm_About()</OnClick>
 				</Scripts>
-				<NormalFont style="GameFontNormal"/>
-				<HighlightFont style="GameFontHighlight"/>
-				<!-- NormalTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Up"/ -->
-				<PushedTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Down"/>
-				<HighlightTexture file="Interface\Buttons\UI-Panel-MinimizeButton-Highlight" alphaMode="ADD"/>
 			</Button>
-			<ScrollFrame name="$parentEditScrollFrame" inherits="UIPanelScrollFrameTemplate">
+			<ScrollFrame name="$parent_editScrollFrame" inherits="UIPanelScrollFrameTemplate">
 				<Size x="481" y="326" />
 				<Anchors>
 					<Anchor point="TOPRIGHT">
@@ -228,12 +241,25 @@
 					</Anchor>
 				</Anchors>
 				<ScrollChild>
-					<EditBox name="$parentText" multiLine="true" autoFocus="false">
+					<EditBox name="$parent_text" multiLine="true" autoFocus="false">
 						<Size x="481" y="326" />
 						<Scripts>
 							<OnEscapePressed>
 								self:ClearFocus()
 							</OnEscapePressed>
+							<OnTabPressed>
+								self:Insert("    ")
+							</OnTabPressed>
+							<OnTextSet>
+								sdm_saveButtonEnabled=-2
+								sdm_editFrame_saveButton:Disable()
+							</OnTextSet>
+							<OnTextChanged>
+								sdm_saveButtonEnabled=sdm_saveButtonEnabled+1
+								if sdm_saveButtonEnabled>0 then
+									sdm_editFrame_saveButton:Enable()
+								end
+							</OnTextChanged>
 						</Scripts>
 						<FontString inherits="GameFontHighlightSmall" />
 					</EditBox>
@@ -244,175 +270,203 @@
 			<OnMouseDown> this:StartMoving();  </OnMouseDown>
 			<OnMouseUp>  this:StopMovingOrSizing(); </OnMouseUp>
 			<OnDragStop> this:StopMovingOrSizing(); </OnDragStop>
-			<OnShow> this:SetPoint("TOPLEFT", "UIParent", "TOPLEFT", 0, -104); </OnShow>
+			<OnShow>
+				this:SetPoint("TOPLEFT", "UIParent", "TOPLEFT", 0, -104)
+				sdm_UpdateCurrentEdit()
+				sdm_ShowMacroEditText(sdm_currentEdit)
+			</OnShow>
 		</Scripts>
 	</Frame>
-	<Frame name="sdm_newFrame" hidden="true" inherits="UIParent">
-	<!-- set the size of the frame --> 
-		<Size> 
-			<AbsDimension x="400" y="300"/> 
+	<Frame name="sdm_newFrame" hidden="true" inherits="UIParent" parent="sdm_editFrame_menuFrame" toplevel="true">
+		<Size>
+			<AbsDimension x="280" y="100"/>
 		</Size>
-		<!-- set where the frame will be anchored --> 
-		<Anchors> 
-			<Anchor point="TOP" relativeTo="sdm_editFrame"> 
+		<Anchors>
+			<Anchor point="TOPLEFT" relativeTo="$parent_newButton" relativePoint="TOPLEFT">
 				<Offset>
-					<AbsDimension x="0" y="90"/>
+					<AbsDimension x="0" y="0"/>
 				</Offset>
 			</Anchor>
-		</Anchors> 
-		<!-- set the parameters for the layers of the frame --> 
-		<Layers> 
-			<Layer level="BACKGROUND"> 
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND">
 				<Texture name="$parent_Background" setAllPoints="true">
-					<!-- Texture has blue color wit 50% alpha -->
-					<Color r="0" g="0" b="0" a="0.8" /> 
-				</Texture> 
+					<Color r="0" g="0" b="0" a="1" />
+				</Texture>
 			</Layer>
-		</Layers> 
+		</Layers>
 		<Frames>
-			<!-- UIPanelCloseButton  -->
-				<Button name="$parent_Button3" inherits="UIPanelCloseButton">
-					<Anchors>
-						<Anchor point="TOPRIGHT">
-							<Offset>
-								<AbsDimension x="-4" y="-4"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-				</Button>
-				<CheckButton name="$parent_RadioButton1" inherits="SendMailRadioButtonTemplate" id="17">
-					<Anchors>
-						<Anchor point="TOPLEFT">
-							<Offset>
-								<AbsDimension x="0" y="-4"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-					<Layers> 
-						<Layer level="ARTWORK"> 
-							<FontString name="$parent_Text" inherits="GameFontNormal" text="Button">
-								<Anchors>
-									<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
-									</Anchor>
-								</Anchors>
-							</FontString>
-						</Layer>
-					</Layers> 
-					<Scripts>
-						<OnLoad>
-							sdm_newFrame_RadioButton1:SetChecked(1)
-						</OnLoad>							
-						<OnClick>
-							sdm_newFrame_RadioButton1:SetChecked(1)
-							sdm_newFrame_RadioButton2:SetChecked(nil)
-						</OnClick>
-					</Scripts>
-				</CheckButton>
-				<CheckButton name="$parent_RadioButton2" inherits="SendMailRadioButtonTemplate" id="18">
-					<Anchors> 
-						<Anchor point="TOPLEFT" relativeTo="$parent_RadioButton1" relativePoint="BOTTOMLEFT" />
-					</Anchors> 
-					<Layers> 
-						<Layer level="ARTWORK"> 
-							<FontString name="$parent_Text" inherits="GameFontNormal" text="Floating">
-								<Anchors>
-									<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
-									</Anchor>
-								</Anchors>
-							</FontString>
-						</Layer>
-					</Layers> 
-					<Scripts>
-						<OnClick>
-							sdm_newFrame_RadioButton2:SetChecked(1)
-							sdm_newFrame_RadioButton1:SetChecked(nil)
-						</OnClick>
-					</Scripts>
-				</CheckButton>
-				<CheckButton name="$parent_RadioButton3" inherits="SendMailRadioButtonTemplate" id="17">
-					<Anchors>
-						<Anchor point="TOPLEFT">
-							<Offset>
-								<AbsDimension x="100" y="-4"/>
-							</Offset>
-						</Anchor>
-					</Anchors>
-					<Layers> 
-						<Layer level="ARTWORK"> 
-							<FontString name="$parent_Text" inherits="GameFontNormal" text="Global">
-								<Anchors>
-									<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
-									</Anchor>
-								</Anchors>
-							</FontString>
-						</Layer>
-					</Layers> 
-					<Scripts>
-						<OnLoad>
-							sdm_newFrame_RadioButton3:SetChecked(1)
-						</OnLoad>							
-						<OnClick>
-							sdm_newFrame_RadioButton3:SetChecked(1)
-							sdm_newFrame_RadioButton4:SetChecked(nil)
-						</OnClick>
-					</Scripts>
-				</CheckButton>
-				<CheckButton name="$parent_RadioButton4" inherits="SendMailRadioButtonTemplate" id="18">
-					<Anchors> 
-						<Anchor point="TOPLEFT" relativeTo="$parent_RadioButton3" relativePoint="BOTTOMLEFT" />
-					</Anchors> 
-					<Layers> 
-						<Layer level="ARTWORK"> 
-							<FontString name="$parent_Text" inherits="GameFontNormal" text="Character-specific">
-								<Anchors>
-									<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
-									</Anchor>
-								</Anchors>
-							</FontString>
-						</Layer>
-					</Layers> 
-					<Scripts>
-						<OnClick>
-							sdm_newFrame_RadioButton4:SetChecked(1)
-							sdm_newFrame_RadioButton3:SetChecked(nil)
-						</OnClick>
-					</Scripts>
-				</CheckButton>
-				<EditBox name="$parent_input" inherits="InputBoxTemplate" autoFocus="false" id="15">
-					<Size> 
-							<AbsDimension x="300" y="26"/> 
-					</Size> 
-					<Anchors> 
-						<Anchor point="TOPLEFT">
-							<Offset>
-								<AbsDimension x="45" y="-50"/>
-							</Offset>
-						</Anchor>
-					</Anchors>           
-					<Layers> 
-						<Layer level="ARTWORK"> 
-							<FontString name="$parent_Text" inherits="GameFontNormal" text="Name: ">
-								<Anchors>
-									<Anchor point="RIGHT" relativePoint="LEFT">
-									</Anchor>
-								</Anchors>
-							</FontString>
-						</Layer>
-					</Layers>
-					<Scripts>
-						<OnEscapePressed>
-							self:ClearFocus()
-						</OnEscapePressed>
-					</Scripts>
-				</EditBox>
-				<Button name="$parentCreateButton" inherits="UIPanelButtonTemplate" text="Create">
-					<Size x="80" y="22" />
+			<CheckButton name="$parent_buttonRadio" inherits="SendMailRadioButtonTemplate" id="17">
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset>
+							<AbsDimension x="0" y="-4"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Button">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnLoad>
+						this:SetChecked(1)
+					</OnLoad>
+					<OnClick>
+						this:SetChecked(1)
+						sdm_newFrame_floatingRadio:SetChecked(nil)
+						sdm_newFrame_scriptRadio:SetChecked(nil)
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parent_floatingRadio" inherits="SendMailRadioButtonTemplate" id="18">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_buttonRadio" relativePoint="BOTTOMLEFT" />
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Floating">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnClick>
+						sdm_newFrame_buttonRadio:SetChecked(nil)
+						this:SetChecked(1)
+						sdm_newFrame_scriptRadio:SetChecked(nil)
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parent_scriptRadio" inherits="SendMailRadioButtonTemplate" id="18">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_floatingRadio" relativePoint="BOTTOMLEFT" />
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Script">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnClick>
+						sdm_newFrame_buttonRadio:SetChecked(nil)
+						sdm_newFrame_floatingRadio:SetChecked(nil)
+						this:SetChecked(1)
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parent_globalRadio" inherits="SendMailRadioButtonTemplate" id="17">
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset>
+							<AbsDimension x="100" y="-4"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Global">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnLoad>
+						this:SetChecked(1)
+					</OnLoad>
+					<OnClick>
+						this:SetChecked(1)
+						sdm_newFrame_charspecRadio:SetChecked(nil)
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parent_charspecRadio" inherits="SendMailRadioButtonTemplate" id="18">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_globalRadio" relativePoint="BOTTOMLEFT" />
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Character-specific">
+							<Anchors>
+								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnClick>
+						this:SetChecked(1)
+						sdm_newFrame_globalRadio:SetChecked(nil)
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<EditBox name="$parent_input" inherits="InputBoxTemplate" autoFocus="false" id="15">
+				<Size>
+						<AbsDimension x="200" y="26"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset>
+							<AbsDimension x="45" y="-50"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Name: ">
+							<Anchors>
+								<Anchor point="RIGHT" relativePoint="LEFT">
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEscapePressed>
+						self:ClearFocus()
+					</OnEscapePressed>
+					<OnEnterPressed>
+						sdm_newFrame_createButton:Click()
+					</OnEnterPressed>
+				</Scripts>
+			</EditBox>
+			<Button name="$parent_createButton" inherits="UIPanelButtonTemplate" text="Create">
+				<Size x="80" y="22" />
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parent_input" relativePoint="BOTTOMLEFT" />
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						sdm_createButtonClicked()
+						sdm_CreateButtonClicked()
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="$parent_cancelButton" inherits="UIPanelButtonTemplate" text="Cancel">
+				<Size x="80" y="22" />
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parent_createButton" relativePoint="RIGHT" />
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						sdm_newFrame:Hide()
 					</OnClick>
 				</Scripts>
 			</Button>
