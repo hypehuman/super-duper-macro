@@ -1,5 +1,4 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/">
-	<Script file="SuperDuperMacro.lua"/>
 	<Frame name="sdm_editFrame" toplevel="true" parent="UIParent" movable="true" enableMouse="true" hidden="true">
 		<Size x="832" y="447" />
 		<Anchors>
@@ -71,6 +70,15 @@
 					</Anchors>
 				</FontString>
 			</Layer>
+			<Layer level="OVERLAY">
+				<FontString name="$parentVersionWarning" inherits="GameFontNormal" text="">
+					<Anchors>
+						<Anchor point="TOP">
+							<Offset x="0" y="-47" />
+						</Anchor>
+					</Anchors>
+				</FontString>
+			</Layer>
 		</Layers>
 		<Frames>
 			<Frame name="$parent_menuFrame">
@@ -102,9 +110,9 @@
 						</FontString>
 						<FontString name="$parent_current" inherits="GameFontNormal" text=">" justifyH="LEFT">
 							<Anchors>
-								<Anchor point="TOPLEFT"  relativeTo="$parent_macroInfo" relativePoint="TOPLEFT">
+								<Anchor point="TOPLEFT" relativeTo="$parent_macroInfo" relativePoint="TOPLEFT">
 									<Offset>
-										<AbsDimension x="-10" y="-6"/>
+										<AbsDimension x="-10" y="0"/>
 									</Offset>
 								</Anchor>
 							</Anchors>
@@ -120,10 +128,10 @@
 							<Anchor point="TOPLEFT" />
 						</Anchors>
 						<Scripts>
-							<OnClick>sdm_MenuFrameButtonClicked()</OnClick>
+							<OnClick>sdm_NewButtonClicked()</OnClick>
 						</Scripts>
 					</Button>
-					<EditBox name="$parent_numberInput" inherits="InputBoxTemplate" autoFocus="false" id="15">
+					<EditBox name="$parent_numberInput" inherits="InputBoxTemplate" autoFocus="false">
 						<Size>
 							<AbsDimension x="30" y="26"/>
 						</Size>
@@ -143,7 +151,7 @@
 							</OnEnterPressed>
 						</Scripts>
 					</EditBox>
-					<Button name="$parent_selectButton" inherits="UIPanelButtonTemplate" text="Select" id="16">
+					<Button name="$parent_selectButton" inherits="UIPanelButtonTemplate" text="Select">
 						<Size>
 							<AbsDimension x="60" y="24"/>
 						</Size>
@@ -155,7 +163,7 @@
 							</Anchor>
 						</Anchors>
 						<Scripts>
-							<OnClick>sdm_MenuFrameButtonClicked()</OnClick>
+							<OnClick>sdm_SelectButtonClicked()</OnClick>
 						</Scripts>
 					</Button>
 				</Frames>
@@ -181,7 +189,7 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						sdm_SaveCurrent()
+						sdm_Edit(sdm_macros[sdm_currentEdit], sdm_editFrame_editScrollFrame_text:GetText())
 					</OnClick>
 				</Scripts>
 			</Button>
@@ -192,7 +200,7 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						sdm_GetCurrentLink()
+						sdm_GetLink(sdm_macros[sdm_currentEdit])
 					</OnClick>
 				</Scripts>
 			</Button>
@@ -202,10 +210,35 @@
 					<Anchor point="RIGHT" relativeTo="$parent_getLinkButton" relativePoint="LEFT" />
 				</Anchors>
 				<Scripts>
-					<OnClick>sdm_MenuFrameButtonClicked()</OnClick>
+					<OnClick>sdm_DeleteButtonClicked()</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="$parent_linkToMacroFrame" inherits="UIPanelButtonTemplate" text="Default Macros">
+			<CheckButton name="$parent_hideTextCheckBox" inherits="UICheckButtonTemplate">
+				<Size>
+					<AbsDimension x="20" y="20"/>
+				</Size>
+				<Anchors>
+					<Anchor point="RIGHT" relativeTo="$parent_deleteButton" relativePoint="LEFT">
+						<Offset x="-200" />
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Hide text on macro button">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnClick>
+						sdm_SetTextDisplay(sdm_macros[sdm_currentEdit], sdm_editFrame_hideTextCheckBox:GetChecked())
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<Button name="$parent_linkToMacroFrame" inherits="UIPanelButtonTemplate" text="Standard Macros">
 				<Size>
 					<AbsDimension x="120" y="19"/>
 				</Size>
@@ -271,10 +304,14 @@
 			<OnMouseUp>  this:StopMovingOrSizing(); </OnMouseUp>
 			<OnDragStop> this:StopMovingOrSizing(); </OnDragStop>
 			<OnShow>
+				PlaySound "igCharacterInfoOpen"
 				this:SetPoint("TOPLEFT", "UIParent", "TOPLEFT", 0, -104)
 				sdm_UpdateCurrentEdit()
-				sdm_ShowMacroEditText(sdm_currentEdit)
+				sdm_ShowMacroEditText(sdm_macros[sdm_currentEdit])
 			</OnShow>
+			<OnHide>
+				PlaySound "igCharacterInfoClose"
+			</OnHide>
 		</Scripts>
 	</Frame>
 	<Frame name="sdm_newFrame" hidden="true" inherits="UIParent" parent="sdm_editFrame_menuFrame" toplevel="true">
@@ -296,7 +333,7 @@
 			</Layer>
 		</Layers>
 		<Frames>
-			<CheckButton name="$parent_buttonRadio" inherits="SendMailRadioButtonTemplate" id="17">
+			<CheckButton name="$parent_buttonRadio" inherits="SendMailRadioButtonTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT">
 						<Offset>
@@ -325,7 +362,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="$parent_floatingRadio" inherits="SendMailRadioButtonTemplate" id="18">
+			<CheckButton name="$parent_floatingRadio" inherits="SendMailRadioButtonTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parent_buttonRadio" relativePoint="BOTTOMLEFT" />
 				</Anchors>
@@ -347,7 +384,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="$parent_scriptRadio" inherits="SendMailRadioButtonTemplate" id="18">
+			<CheckButton name="$parent_scriptRadio" inherits="SendMailRadioButtonTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parent_floatingRadio" relativePoint="BOTTOMLEFT" />
 				</Anchors>
@@ -369,7 +406,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="$parent_globalRadio" inherits="SendMailRadioButtonTemplate" id="17">
+			<CheckButton name="$parent_globalRadio" inherits="SendMailRadioButtonTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT">
 						<Offset>
@@ -397,7 +434,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<CheckButton name="$parent_charspecRadio" inherits="SendMailRadioButtonTemplate" id="18">
+			<CheckButton name="$parent_charspecRadio" inherits="SendMailRadioButtonTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parent_globalRadio" relativePoint="BOTTOMLEFT" />
 				</Anchors>
@@ -418,7 +455,7 @@
 					</OnClick>
 				</Scripts>
 			</CheckButton>
-			<EditBox name="$parent_input" inherits="InputBoxTemplate" autoFocus="false" id="15">
+			<EditBox name="$parent_input" inherits="InputBoxTemplate" autoFocus="false">
 				<Size>
 						<AbsDimension x="200" y="26"/>
 				</Size>

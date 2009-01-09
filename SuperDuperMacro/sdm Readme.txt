@@ -1,30 +1,42 @@
 Super Duper Macro
-version 1.3.1
+version 1.4
 by hypehuman
+
+Check for updates at http://www.wowinterface.com/downloads/info10496
 
 Open the interface by typing /sdm
 
-This addon allows you to create macros beyond the 255-character limit, and even beyond the 1023-character macrotext limit.  However, no individual line in a macro may be more than about 1000 characters.  The number of lines is virtually unlimited.
+This addon allows you to create macros beyond the 255-character limit, and even beyond the 1023-character macrotext limit.  However, no individual line in a macro may be more than 1023 characters long (you will get a warning).  The number of lines is unlimited.
 
 This mod allows you to make two types of macros:
 ¥ button macros ("b") can be placed on your action bar because they tie themselves to a regular macro.  Therefore, you can only make a limited number of these (36 global and 36 character-specific for each character).  To set an icon for a button macro, use the regular macro interface (/macro).
 ¥ floating macros ("f"), do not have buttons, and are accessed by /click.  You can make as many of these as you want.
 ¥ You can also make lua scripts ("s") of unlimited length that you can call using "/sdm run <name>" or via sdm_RunScript("name")
 
-I haven't yet made the interface as pretty as I'd like (I'm just learning xml), and I haven't put in all the error handling features that I want to.  Some of them are:
+Features yet to be implemented:
+¥ Clickable, scrollable menu of macros with collapsible drop-down bars (like the quest log interface)
+¥ A way to change button-macro icons from within the SDM interface (currently you have to switch over to the regular macro window to do this)
+¥ Make the interface more pretty
 
-¥ Clickable menu of macros
-¥ Add the ability to change button-macro icons from within the SDM interface (currently you have to switch over to the regular macro window to do this)
-
-Over the next few weeks, I'm going to be updating the interface and adding features.  If anyone has an idea, please let me know on wowinterface.com, or add it yourself and upload it :)  I haven't gotten a lot of feedback on this addon, but I know people have been using it.  So please let me know what you like about it and what you don't!
+Suggestions and bug reports are always welcome.  You can post comments on the wowinterface.com page for this addon, or if you want to add something yourself, you can upload it in the "Optional Files" tab.
 
 Special thanks to:
 ¥ SuperMacro, which inspired the idea for this addon.
 ¥ Behaviors, from which I shamelessly copied many UI elements.
+¥ÊAll the regulars on the UI & Macro forums, who have been guiding me through this process.
 
 
 
 Change Log
+
+1.4 (1/8/09)
+¥ Added an option to show/hide the text on macro buttons
+¥ Fixed ">" to be more accurate
+¥ SDM will no longer attempt to create, delete, or modify macros during combat.  You can still do these things, but the changes will not take effect until after combat.
+¥ÊDeleting floating macros will now actually disable them
+¥ Greatly increased the efficiency of operations like saving and deleting
+¥ÊIncreased the limit on the number of lines to 1023, and made the number of lines limitless (actually, the maximum length of any string is 2^24 characters, so the limit is somewhere below that, but that's the length of about 20 average novels and it will probably crash your client).
+¥ÊChanged the structure of the macro frames to eliminate the chance of a recently discovered "C stack overflow" error on very long macros
 
 1.3.1 (12/16/08)
 ¥ÊFixed an occasional bug with the "Get Link" and "Delete" buttons
