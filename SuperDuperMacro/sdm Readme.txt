@@ -1,5 +1,5 @@
 Super Duper Macro
-version 1.4
+version 1.4.1
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -28,6 +28,9 @@ Special thanks to:
 
 
 Change Log
+
+1.4.1 (1/9/09)
+¥ÊFixed a minor bug that sometimes occurred while loading
 
 1.4 (1/8/09)
 ¥ Added an option to show/hide the text on macro buttons

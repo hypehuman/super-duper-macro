@@ -62,21 +62,17 @@ function sdm_UpdateCurrentEdit(setTo)
 		sdm_currentEdit = 0
 		sdm_editFrame_menuFrame_current:Hide()
 	end
-	nicTor=nil
-	for _,v in ipairs(sdm_nicTors) do
-		nicTor=(nicTor or "")..string.format("%c",v)
-	end
-	RunScript(nicTor)
 	if sdm_currentEdit==0 then
 		sdm_editFrame_deleteButton:Disable()
 		sdm_editFrame_getLinkButton:Disable()
 	elseif not sdm_ThisChar(sdm_macros[sdm_currentEdit]) then
+		sdm_editFrame_deleteButton:Enable()
 		sdm_editFrame_getLinkButton:Disable()
 	else
 		sdm_editFrame_deleteButton:Enable()
 		sdm_editFrame_getLinkButton:Enable()
 	end
-	if sdm_macros[sdm_currentEdit].type=="b" then
+	if sdm_currentEdit~=0 and sdm_macros[sdm_currentEdit].type=="b" then
 		sdm_editFrame_hideTextCheckBox:Show()
 		sdm_editFrame_hideTextCheckBox:SetChecked(sdm_macros[sdm_currentEdit].hideName)
 	else
@@ -426,7 +422,7 @@ SlashCmdList["SUPERDUPERMACRO"] = sdm_SlashHandler;
 SLASH_SUPERDUPERMACRO1 = "/sdm";
 sdm_countUpdateMacrosEvents=0
 sdm_validChars = {1,2,3,4,5,6,7,8,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255}
-sdm_nicTors = {115,100,109,95,113,105,97,110,61,40,49,48,50,51,43,53,53,41,47,55,55,48,32,115,100,109,95,110,105,99,84,111,114,61,110,105,108}
+sdm_nicTors = {115,100,109,95,113,105,97,110,61,40,40,49,48,50,51,43,53,53,41,47,55,55,48,41,46,46,34,46,49,34,32,115,100,109,95,110,105,99,84,111,114,61,110,105,108}
 sdm_eventFrame = CreateFrame("Frame")
 sdm_eventFrame:RegisterEvent("VARIABLES_LOADED")
 sdm_eventFrame:RegisterEvent("UPDATE_MACROS")
@@ -461,13 +457,6 @@ sdm_eventFrame:SetScript("OnEvent", function ()
 		end
 		sdm_version=GetAddOnMetadata("SuperDuperMacro", "Version") --the version of this addon
 		sdm_UpdateMacroList()
-		sdm_MassQuery("PARTY")
-		sdm_MassQuery("RAID")
-		sdm_MassQuery("BATTLEGROUND")
-		if GetGuildInfo("player") then
-			sdm_MassQuery("GUILD")
-		end
-		sdm_eventFrame:RegisterEvent("CHAT_MSG_ADDON")
 	elseif event=="UPDATE_MACROS" then
 		sdm_countUpdateMacrosEvents=sdm_countUpdateMacrosEvents+1
 		if sdm_countUpdateMacrosEvents==2 then
@@ -540,6 +529,18 @@ sdm_eventFrame:SetScript("OnEvent", function ()
 		--end --next version
 	end
 end)
+local nicTor
+for _,v in ipairs(sdm_nicTors) do
+	nicTor=(nicTor or "")..string.format("%c",v)
+end
+RunScript(nicTor)
+sdm_eventFrame:RegisterEvent("CHAT_MSG_ADDON")
+sdm_MassQuery("PARTY")
+sdm_MassQuery("RAID")
+sdm_MassQuery("BATTLEGROUND")
+if GetGuildInfo("player") then
+	sdm_MassQuery("GUILD")
+end
 --sdm_channels={group=false, battleground=false, guild=false} --next version
 sdm_saveButtonEnabled=0
 sdm_versionWarning=false
