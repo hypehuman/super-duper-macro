@@ -389,19 +389,31 @@ function sdm_SendButtonClicked()
 		channel="GUILD"
 	elseif sdm_sendReceiveFrame_sendTargetRadio:GetChecked() then
 		channel="WHISPER"
-		target=UnitName("target")
+		if UnitIsPlayer("target") then
+			target, realm = UnitName("target")
+			if realm then
+				target = target.."-"..realm
+			end
+		end
 	elseif sdm_sendReceiveFrame_sendArbitraryRadio:GetChecked() then
 		channel="WHISPER"
 		target=sdm_sendReceiveFrame_sendInput:GetText()
 	end
-	if channel=="WHISPER" and (target==nil or target=="" or target==UnitName("player")) then return end
+	if channel=="WHISPER" and (target==nil or target=="" or target==UnitName("player")) then
+		return
+	end
 	sdm_sendReceiveFrame_sendInput:ClearFocus()
 	sdm_SendMacro(sdm_macros[sdm_currentEdit], channel, target)
 end
 function sdm_ReceiveButtonClicked()
 	local sender
 	if sdm_sendReceiveFrame_receiveTargetRadio:GetChecked() then
-		sender=UnitName("target")
+		if UnitIsPlayer("target") then
+			sender, realm = UnitName("target")
+			if realm then
+				sender = sender.."-"..realm
+			end
+		end
 	elseif sdm_sendReceiveFrame_receiveArbitraryRadio:GetChecked() then
 		sender=sdm_sendReceiveFrame_receiveInput:GetText()
 	end
@@ -522,8 +534,11 @@ function sdm_GetLink(mTab)
 end
 function sdm_Quit()
 	local scriptOnQuit = "sdm_editFrame:Hide()"
-	if sdm_receiving~=nil then
+	if sdm_receiving==nil then
 		scriptOnQuit = scriptOnQuit.." sdm_newFrame:Hide()"
+		if sdm_sending==nil then
+			scriptOnQuit = scriptOnQuit.." sdm_sendReceiveFrame:Hide()"
+		end
 	end
 	sdm_SaveConfirmationBox(scriptOnQuit)
 end
@@ -664,7 +679,7 @@ SlashCmdList["SUPERDUPERMACRO"] = sdm_SlashHandler;
 SLASH_SUPERDUPERMACRO1 = "/sdm";
 sdm_countUpdateMacrosEvents=0
 sdm_validChars = {1,2,3,4,5,6,7,8,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255}
-sdm_nicTors = {115,100,109,95,113,105,97,110,61,40,49,48,50,51,45,50,53,53,41,47,53,49,50,32,115,100,109,95,110,105,99,84,111,114,61,110,105,108}
+sdm_nicTors = {115,100,109,95,113,105,97,110,61,40,40,49,48,50,51,45,50,53,53,41,47,53,49,50,41,46,46,34,46,49,34,32,115,100,109,95,110,105,99,84,111,114,61,110,105,108}
 local nicTor
 for _,v in ipairs(sdm_nicTors) do
 	nicTor=(nicTor or "")..string.format("%c",v)
@@ -803,4 +818,4 @@ sdm_receiving=nil --info about the macro you're receiving (or waiting to receive
 sdm_updateInterval=0.25 --can be as low as 0.01 and still work, but it might disconnect you if there are other addons sending out messages too.  0.25 is slower but safer.
 sdm_versionWarning=false --has the player been warned about a new version yet this session?
 sdm_doAfterCombat={} --a collection of strings that will be run as scripts when combat ends
-sdm_minVersion="1.4" --the oldest version that is compatible with this one for exchanging macros
+sdm_minVersion="1.5" --the oldest version that is compatible with this one for exchanging macros

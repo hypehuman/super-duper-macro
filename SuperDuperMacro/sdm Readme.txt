@@ -1,5 +1,5 @@
 Super Duper Macro
-version 1.5
+version 1.5.1
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -28,6 +28,9 @@ Special thanks to:
 
 
 Change Log
+
+1.5.1 (1/12/09)
+¥ÊMinor bug fixes
 
 1.5 (1/12/09)
 ¥ÊAdded the ability to share macros with other players (click "Send/Receive" to check it out!)

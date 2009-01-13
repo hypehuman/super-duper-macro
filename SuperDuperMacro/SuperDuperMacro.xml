@@ -843,6 +843,7 @@
 					</Anchor>
 				</Anchors>
 				<Scripts>
+					<OnLoad>this:Disable()</OnLoad>
 					<OnClick>sdm_CancelSend()</OnClick>
 				</Scripts>
 			</Button>
@@ -981,6 +982,7 @@
 					</Anchor>
 				</Anchors>
 				<Scripts>
+					<OnLoad>this:Disable()</OnLoad>
 					<OnClick>sdm_CancelReceive()</OnClick>
 				</Scripts>
 			</Button>
