@@ -1,4 +1,12 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/">
+	<Frame name="sdm_updateFrame" parent="UIParent" hidden="true">
+		<Scripts>
+			<OnShow>
+				self.TimeSinceLastUpdate=0
+			</OnShow>
+			<OnUpdate> sdm_OnUpdate(self, elapsed); </OnUpdate>
+		</Scripts>
+	</Frame>
 	<Frame name="sdm_editFrame" toplevel="true" parent="UIParent" movable="true" enableMouse="true" hidden="true">
 		<Size x="832" y="447" />
 		<Anchors>
@@ -94,7 +102,7 @@
 							<Anchors>
 								<Anchor point="LEFT" relativePoint="TOPLEFT">
 									<Offset>
-										<AbsDimension x="4" y="-50"/>
+										<AbsDimension x="4" y="-40"/>
 									</Offset>
 								</Anchor>
 							</Anchors>
@@ -103,7 +111,7 @@
 							<Anchors>
 								<Anchor point="TOPLEFT" relativePoint="TOPLEFT">
 									<Offset>
-										<AbsDimension x="4" y="-110"/>
+										<AbsDimension x="4" y="-100"/>
 									</Offset>
 								</Anchor>
 							</Anchors>
@@ -131,6 +139,19 @@
 							<OnClick>sdm_NewButtonClicked()</OnClick>
 						</Scripts>
 					</Button>
+					<Button name="$parent_sendReceiveButton" inherits="UIPanelButtonTemplate" text="Send/Receive">
+						<Size>
+							<AbsDimension x="120" y="24"/>
+						</Size>
+						<Anchors>
+							<Anchor point="TOPLEFT" relativeTo="$parent_newButton" relativePoint="TOPRIGHT" />
+						</Anchors>
+						<Scripts>
+							<OnClick>
+								sdm_sendReceiveFrame:Show()
+							</OnClick>
+						</Scripts>
+					</Button>
 					<EditBox name="$parent_numberInput" inherits="InputBoxTemplate" autoFocus="false">
 						<Size>
 							<AbsDimension x="30" y="26"/>
@@ -138,7 +159,7 @@
 						<Anchors>
 							<Anchor point="TOPLEFT">
 								<Offset>
-									<AbsDimension x="10" y="-70"/>
+									<AbsDimension x="10" y="-60"/>
 								</Offset>
 							</Anchor>
 						</Anchors>
@@ -284,14 +305,10 @@
 								self:Insert("    ")
 							</OnTabPressed>
 							<OnTextSet>
-								sdm_saveButtonEnabled=-2
 								sdm_editFrame_saveButton:Disable()
 							</OnTextSet>
 							<OnTextChanged>
-								sdm_saveButtonEnabled=sdm_saveButtonEnabled+1
-								if sdm_saveButtonEnabled>0 then
-									sdm_editFrame_saveButton:Enable()
-								end
+								sdm_editFrame_saveButton:Enable()
 							</OnTextChanged>
 						</Scripts>
 						<FontString inherits="GameFontHighlightSmall" />
@@ -345,7 +362,7 @@
 					<Layer level="ARTWORK">
 						<FontString name="$parent_Text" inherits="GameFontNormal" text="Button">
 							<Anchors>
-								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
+								<Anchor point="LEFT" relativePoint="RIGHT">
 								</Anchor>
 							</Anchors>
 						</FontString>
@@ -370,7 +387,7 @@
 					<Layer level="ARTWORK">
 						<FontString name="$parent_Text" inherits="GameFontNormal" text="Floating">
 							<Anchors>
-								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
+								<Anchor point="LEFT" relativePoint="RIGHT">
 								</Anchor>
 							</Anchors>
 						</FontString>
@@ -392,7 +409,7 @@
 					<Layer level="ARTWORK">
 						<FontString name="$parent_Text" inherits="GameFontNormal" text="Script">
 							<Anchors>
-								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
+								<Anchor point="LEFT" relativePoint="RIGHT">
 								</Anchor>
 							</Anchors>
 						</FontString>
@@ -418,7 +435,7 @@
 					<Layer level="ARTWORK">
 						<FontString name="$parent_Text" inherits="GameFontNormal" text="Global">
 							<Anchors>
-								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
+								<Anchor point="LEFT" relativePoint="RIGHT">
 								</Anchor>
 							</Anchors>
 						</FontString>
@@ -442,7 +459,7 @@
 					<Layer level="ARTWORK">
 						<FontString name="$parent_Text" inherits="GameFontNormal" text="Character-specific">
 							<Anchors>
-								<Anchor point="TOPLEFT" relativePoint="TOPRIGHT">
+								<Anchor point="LEFT" relativePoint="RIGHT">
 								</Anchor>
 							</Anchors>
 						</FontString>
@@ -490,6 +507,18 @@
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parent_input" relativePoint="BOTTOMLEFT" />
 				</Anchors>
+				<Layers>
+					<Layer level="OVERLAY">
+						<Texture name="$parent_flash" file="Interface\Buttons\CheckButtonGlow" alphaMode="ADD" hidden="true">
+							<Size>
+								<AbsDimension x="160" y="44"/>
+							</Size>
+							<Anchors>
+								<Anchor point="CENTER" />
+							</Anchors>
+						</Texture>
+					</Layer>
+				</Layers>
 				<Scripts>
 					<OnClick>
 						sdm_CreateButtonClicked()
@@ -503,10 +532,473 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						sdm_newFrame:Hide()
+						sdm_CreateCancelButtonPressed()
 					</OnClick>
 				</Scripts>
 			</Button>
 		</Frames>
+		<Scripts>
+			<OnHide>
+				UIFrameFlashStop(sdm_newFrame_createButton_flash)
+			</OnHide>
+		</Scripts>
+	</Frame>
+	<Frame name="sdm_sendReceiveFrame" parent="sdm_editFrame" hidden="true">
+		<Size x="360" y="300" />
+		<Anchors>
+			<Anchor point="LEFT" relativeTo="$parent" relativePoint="RIGHT">
+				<Offset>
+					<AbsDimension x="-10" y="0"/>
+				</Offset>
+			</Anchor>
+		</Anchors>
+		<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+			<TileSize>
+				<AbsValue val="32"/>
+			</TileSize>
+			<EdgeSize>
+				<AbsValue val="32"/>
+			</EdgeSize>
+			<BackgroundInsets>
+				<AbsInset left="11" right="12" top="12" bottom="11"/>
+			</BackgroundInsets>
+		</Backdrop>
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString name="$parent_sendInstructionText" inherits="GameFontNormal" text="Send currently selected macro to waiting targets:">
+					<Anchors>
+						<Anchor point="LEFT" relativePoint="TOPLEFT">
+							<Offset>
+								<AbsDimension x="15" y="-20"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parent_receiveInstructionText" inherits="GameFontNormal" text="Await a macro from a player:">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parent_sendInstructionText" relativePoint="BOTTOMLEFT">
+							<Offset x="0" y="-170" />
+						</Anchor>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Button name="$parent_quitButton" inherits="UIPanelCloseButton">
+				<Anchors>
+					<Anchor point="TOPRIGHT">
+						<Offset x="-3" y="-3" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						sdm_sendReceiveFrame:Hide()
+					</OnClick>
+				</Scripts>
+			</Button>
+			<CheckButton name="$parent_sendPartyRadio" inherits="SendMailRadioButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_sendInstructionText" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="-4"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Party">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnLoad>
+						this:SetChecked(1)
+					</OnLoad>
+					<OnClick>
+						this:SetChecked(1)
+						sdm_sendReceiveFrame_sendRaidRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendBattlegroundRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendGuildRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendTargetRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendArbitraryRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendInput:ClearFocus()
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parent_sendRaidRadio" inherits="SendMailRadioButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_sendPartyRadio" relativePoint="BOTTOMLEFT" />
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Raid">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnClick>
+						sdm_sendReceiveFrame_sendPartyRadio:SetChecked(nil)
+						this:SetChecked(1)
+						sdm_sendReceiveFrame_sendBattlegroundRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendGuildRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendTargetRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendArbitraryRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendInput:ClearFocus()
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parent_sendBattlegroundRadio" inherits="SendMailRadioButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_sendRaidRadio" relativePoint="BOTTOMLEFT" />
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Battleground">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnClick>
+						sdm_sendReceiveFrame_sendPartyRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendRaidRadio:SetChecked(nil)
+						this:SetChecked(1)
+						sdm_sendReceiveFrame_sendGuildRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendTargetRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendArbitraryRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendInput:ClearFocus()
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parent_sendGuildRadio" inherits="SendMailRadioButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_sendBattlegroundRadio" relativePoint="BOTTOMLEFT" />
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Guild">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnClick>
+						sdm_sendReceiveFrame_sendPartyRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendRaidRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendBattlegroundRadio:SetChecked(nil)
+						this:SetChecked(1)
+						sdm_sendReceiveFrame_sendTargetRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendArbitraryRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendInput:ClearFocus()
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parent_sendTargetRadio" inherits="SendMailRadioButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_sendGuildRadio" relativePoint="BOTTOMLEFT" />
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Your current target">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnClick>
+						sdm_sendReceiveFrame_sendPartyRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendRaidRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendBattlegroundRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendGuildRadio:SetChecked(nil)
+						this:SetChecked(1)
+						sdm_sendReceiveFrame_sendArbitraryRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendInput:ClearFocus()
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parent_sendArbitraryRadio" inherits="SendMailRadioButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_sendTargetRadio" relativePoint="BOTTOMLEFT" />
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="A specific character:">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnClick>
+						sdm_sendReceiveFrame_sendInput:SetFocus()
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<EditBox name="$parent_sendInput" inherits="InputBoxTemplate" autoFocus="false">
+				<Size>
+					<AbsDimension x="180" y="26"/>
+				</Size>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parent_sendArbitraryRadio" relativePoint="RIGHT">
+						<Offset x="133" y="0" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnEscapePressed>
+						self:ClearFocus()
+					</OnEscapePressed>
+					<OnEnterPressed>
+						sdm_sendReceiveFrame_sendButton:Click()
+					</OnEnterPressed>
+					<OnEditFocusGained>
+						sdm_sendReceiveFrame_sendPartyRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendRaidRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendBattlegroundRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendGuildRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendTargetRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_sendArbitraryRadio:SetChecked(1)
+					</OnEditFocusGained>
+				</Scripts>
+			</EditBox>
+			<Button name="$parent_sendButton" inherits="UIPanelButtonTemplate" text="Send">
+				<Size>
+					<AbsDimension x="60" y="24"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_sendArbitraryRadio" relativePoint="BOTTOMLEFT">
+						<Offset x="0" y="-15" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>sdm_SendButtonClicked()</OnClick>
+				</Scripts>
+			</Button>
+			<Frame name="$parent_sendBar">
+				<Size x="200" y="30" />
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parent_sendButton" relativePoint="RIGHT">
+						<Offset x="5" y="0" />
+					</Anchor>
+				</Anchors>
+				<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
+					<EdgeSize>
+						<AbsValue val="8"/>
+					</EdgeSize>
+					<TileSize>
+						<AbsValue val="32"/>
+					</TileSize>
+					<BackgroundInsets>
+						<AbsInset left="2" right="2" top="2" bottom="2"/>
+					</BackgroundInsets>
+					<Color r="0" g="0" b="0" a="0.7" />
+				</Backdrop>
+				<Frames>
+					<StatusBar name="$parent_statusBar" minValue="0" maxValue="100" defaultValue="0">
+						<Anchors>
+							<Anchor point="TOPLEFT">
+								<Offset x="5" y="-5" />
+							</Anchor>
+							<Anchor point="BOTTOMRIGHT">
+								<Offset x="-5" y="5" />
+							</Anchor>
+						</Anchors>
+						<Layers>
+							<Layer level="ARTWORK">
+								<FontString name="$parent_text" inherits="GameFontNormal" text="">
+									<color r="1.0" g="0.5" b="0" />
+								</FontString>
+							</Layer>
+						</Layers>
+						<BarTexture name="$parentTex" file="Interface\PaperDollInfoFrame\UI-Character-Skills-Bar" />
+						<BarColor r="0" g="0.5" b="1.0" />
+					</StatusBar>
+				</Frames>
+			</Frame>
+			<Button name="$parent_cancelSendButton" inherits="UIPanelButtonTemplate" text="Cancel">
+				<Size>
+					<AbsDimension x="60" y="24"/>
+				</Size>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parent_sendBar" relativePoint="RIGHT">
+						<Offset x="5" y="0" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>sdm_CancelSend()</OnClick>
+				</Scripts>
+			</Button>
+			<CheckButton name="$parent_receiveTargetRadio" inherits="SendMailRadioButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_receiveInstructionText" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="0" y="-4"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Your current target">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnLoad>
+						this:SetChecked(1)
+					</OnLoad>
+					<OnClick>
+						this:SetChecked(1)
+						sdm_sendReceiveFrame_receiveArbitraryRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_receiveInput:ClearFocus()
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<CheckButton name="$parent_receiveArbitraryRadio" inherits="SendMailRadioButtonTemplate">
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_receiveTargetRadio" relativePoint="BOTTOMLEFT" />
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="A specific character:">
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT">
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnClick>
+						sdm_sendReceiveFrame_receiveInput:SetFocus()
+					</OnClick>
+				</Scripts>
+			</CheckButton>
+			<EditBox name="$parent_receiveInput" inherits="InputBoxTemplate" autoFocus="false">
+				<Size>
+					<AbsDimension x="180" y="26"/>
+				</Size>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parent_receiveArbitraryRadio" relativePoint="RIGHT">
+						<Offset x="133" y="0" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnEscapePressed>
+						self:ClearFocus()
+					</OnEscapePressed>
+					<OnEnterPressed>
+						sdm_sendReceiveFrame_receiveButton:Click()
+					</OnEnterPressed>
+					<OnEditFocusGained>
+						sdm_sendReceiveFrame_receiveTargetRadio:SetChecked(nil)
+						sdm_sendReceiveFrame_receiveArbitraryRadio:SetChecked(1)
+					</OnEditFocusGained>
+				</Scripts>
+			</EditBox>
+			<Button name="$parent_receiveButton" inherits="UIPanelButtonTemplate" text="Receive">
+				<Size>
+					<AbsDimension x="60" y="24"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_receiveArbitraryRadio" relativePoint="BOTTOMLEFT">
+						<Offset x="0" y="-15" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>sdm_ReceiveButtonClicked()</OnClick>
+				</Scripts>
+			</Button>
+			<Frame name="$parent_receiveBar">
+				<Size x="200" y="30" />
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parent_receiveButton" relativePoint="RIGHT">
+						<Offset x="5" y="0" />
+					</Anchor>
+				</Anchors>
+				<Backdrop bgFile="Interface\Tooltips\UI-Tooltip-Background" edgeFile="Interface\Tooltips\UI-Tooltip-Border" tile="true">
+					<EdgeSize>
+						<AbsValue val="8"/>
+					</EdgeSize>
+					<TileSize>
+						<AbsValue val="32"/>
+					</TileSize>
+					<BackgroundInsets>
+						<AbsInset left="2" right="2" top="2" bottom="2"/>
+					</BackgroundInsets>
+					<Color r="0" g="0" b="0" a="0.7" />
+				</Backdrop>
+				<Frames>
+					<StatusBar name="$parent_statusBar" minValue="0" maxValue="100" defaultValue="0">
+						<Anchors>
+							<Anchor point="TOPLEFT">
+								<Offset x="5" y="-5" />
+							</Anchor>
+							<Anchor point="BOTTOMRIGHT">
+								<Offset x="-5" y="5" />
+							</Anchor>
+						</Anchors>
+						<Layers>
+							<Layer level="ARTWORK">
+								<FontString name="$parent_text" inherits="GameFontNormal" text="">
+									<color r="1.0" g="0.5" b="0" />
+								</FontString>
+							</Layer>
+						</Layers>
+						<BarTexture name="$parentTex" file="Interface\PaperDollInfoFrame\UI-Character-Skills-Bar" />
+						<BarColor r="0" g="0.5" b="1.0" />
+					</StatusBar>
+				</Frames>
+			</Frame>
+			<Button name="$parent_cancelReceiveButton" inherits="UIPanelButtonTemplate" text="Cancel">
+				<Size>
+					<AbsDimension x="60" y="24"/>
+				</Size>
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parent_receiveBar" relativePoint="RIGHT">
+						<Offset x="5" y="0" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>sdm_CancelReceive()</OnClick>
+				</Scripts>
+			</Button>
+		</Frames>
+		<Scripts>
+			<OnMouseDown> sdm_editFrame:StartMoving();  </OnMouseDown>
+			<OnMouseUp>  sdm_editFrame:StopMovingOrSizing(); </OnMouseUp>
+			<OnDragStop> sdm_editFrame:StopMovingOrSizing(); </OnDragStop>
+			<OnHide>
+				if sdm_sending==nil then
+					sdm_sendReceiveFrame_sendBar_statusBar:SetValue(0)
+					sdm_sendReceiveFrame_sendBar_statusBar_text:SetText("")
+				end
+				if sdm_receiving==nil then
+					sdm_sendReceiveFrame_receiveBar_statusBar:SetValue(0)
+					sdm_sendReceiveFrame_receiveBar_statusBar_text:SetText("")
+				end
+			</OnHide>
+		</Scripts>
 	</Frame>
 </Ui>

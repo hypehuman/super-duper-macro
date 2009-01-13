@@ -1,9 +1,10 @@
 function sdm_SlashHandler(command)
 	if command=="" then
+		sdm_editFrame:Hide()
 		sdm_editFrame:Show()
 	elseif command:sub(1,4)=="run " then
 		sdm_RunScript(command:sub(5,command:len()))
-	else print("sdm did not recognize the command \""..command.."\"")
+	else print("SDM did not recognize the command \""..command.."\"")
 	end
 end
 function sdm_MakeMacroFrame(name, text) --returns the frame
@@ -156,11 +157,173 @@ function sdm_UpdateMacroList()
 	sdm_editFrame_menuFrame_macroInfo:SetText(infoString)
 	sdm_UpdateCurrentEdit()
 end
-function sdm_MassQuery(channel) --next version: have a single token for party and raid, then decide here.
-	SendAddonMessage("Super Duper Macro query", sdm_qian, channel)
+function sdm_Query(channel, target) --next version: have a single token for party and raid, then decide here.
+	SendAddonMessage("Super Duper Macro query", sdm_qian, channel, target)
 end
-function sdm_Query(target)
-	SendAddonMessage("Super Duper Macro query", sdm_qian, "WHISPER", target)
+function sdm_SendMacro(mTab, chan, tar)
+	if sdm_sending~=nil then
+		print("SDM: You are already sending something.")
+		return
+	end
+	local perCharacter=nil
+	--make the string that will be split up and sent.  It consists of a bunch of values separated by commas.  They are, in order: the version the sender is running, the minimum version the receiver must have, the type of macro, the perCharacter status ("<table value>" or "nil"), the length of the name, the length of the text, the name, and the text.  There is no comma between the name and the text.
+	local textToSend = sdm_qian..","..sdm_minVersion..","..mTab.type..","..tostring(mTab.character)..","..mTab.name:len()..","..mTab.text:len()..","..mTab.name..mTab.text
+	local pref = "Super Duper Macro send1" -- if the prefix ends in "send1", it's the first line.  If it ends in "send2", it's any line after the first.
+	local lineLen = 254 - pref:len()
+	local linesToSend={}
+	local pos = 1
+	while pos <= textToSend:len() do
+		table.insert(linesToSend, textToSend:sub(pos, pos+lineLen-1))
+		pos = pos+lineLen
+	end
+	sdm_sending={
+		i=1,
+		lines = linesToSend,
+		numLines = getn(linesToSend),
+		channel = chan,
+		target = tar,
+		prefix = pref
+	}
+	sdm_sendReceiveFrame_sendBar_statusBar:SetMinMaxValues(0, sdm_sending.numLines)
+	sdm_sendReceiveFrame_sendBar_statusBar:SetValue(0)
+	sdm_sendReceiveFrame_sendBar_statusBar_text:SetText("|cffffccffSending to "..(sdm_sending.target or sdm_sending.channel).."|r")
+	sdm_sendReceiveFrame_cancelSendButton:Enable()
+	sdm_sendReceiveFrame_sendButton:Disable()
+	sdm_sendReceiveFrame_sendPartyRadio:Disable()
+	sdm_sendReceiveFrame_sendRaidRadio:Disable()
+	sdm_sendReceiveFrame_sendBattlegroundRadio:Disable()
+	sdm_sendReceiveFrame_sendGuildRadio:Disable()
+	sdm_sendReceiveFrame_sendTargetRadio:Disable()
+	sdm_sendReceiveFrame_sendArbitraryRadio:Disable()
+	sdm_sendReceiveFrame_sendInput:EnableMouse(nil)
+	sdm_updateFrame:Show()
+end
+function sdm_OnUpdate(self, elapsed) --used for sending macros
+	self.TimeSinceLastUpdate = self.TimeSinceLastUpdate + elapsed
+	if self.TimeSinceLastUpdate > sdm_updateInterval then
+		if sdm_sending.i == 2 then
+			sdm_sending.prefix="Super Duper Macro send2"
+		end
+		SendAddonMessage(sdm_sending.prefix, sdm_sending.lines[sdm_sending.i], sdm_sending.channel, sdm_sending.target)
+		sdm_sendReceiveFrame_sendBar_statusBar:SetValue(sdm_sending.i)
+		sdm_sending.i = sdm_sending.i+1
+		if sdm_sending.i>sdm_sending.numLines then
+			sdm_EndSending("|cff44ff00Sent to "..(sdm_sending.target or sdm_sending.channel).."|r")
+		end
+		self.TimeSinceLastUpdate = 0
+	end
+end
+function sdm_WaitForMacro(name)
+	if sdm_receiving~=nil then
+		print("SDM: You are already receiving or waiting.")
+		return
+	end
+	sdm_receiving = {playerName=name, first=true}
+	sdm_sendReceiveFrame_receiveBar_statusBar:SetValue(0)
+	sdm_sendReceiveFrame_receiveBar_statusBar_text:SetText("|cffffccffWaiting for "..sdm_receiving.playerName.."|r")
+	sdm_sendReceiveFrame_cancelReceiveButton:Enable()
+	sdm_sendReceiveFrame_receiveButton:Disable()
+	sdm_editFrame_menuFrame_newButton:Disable()
+	sdm_sendReceiveFrame_receiveTargetRadio:Disable()
+	sdm_sendReceiveFrame_receiveArbitraryRadio:Disable()
+	sdm_sendReceiveFrame_receiveInput:EnableMouse(nil)
+	sdm_newFrame:Hide()
+end
+function sdm_ReceiveLine(line, send1)
+	if sdm_receiving.first and send1 then --this is the first line
+		sdm_receiving.nameAndText, sdm_receiving.textLen, sdm_receiving.playerNameLen, sdm_receiving.perCharacter, sdm_receiving.type, sdm_receiving.minVersion, sdm_receiving.sendersVersion = sdm_SplitString(line, ",", 6)
+		sdm_receiving.perCharacter = (sdm_receiving.perCharacter~="nil")
+		sdm_receiving.textLen = 0 + sdm_receiving.textLen
+		sdm_receiving.playerNameLen = 0 + sdm_receiving.playerNameLen
+		sdm_receiving.first = false
+		sdm_sendReceiveFrame_receiveBar_statusBar:SetMinMaxValues(0, sdm_receiving.playerNameLen + sdm_receiving.textLen)
+		sdm_sendReceiveFrame_receiveBar_statusBar_text:SetText("|cffffccffReceiving|r")
+		sdm_VersionReceived(sdm_receiving.sendersVersion)
+		if sdm_CompareVersions(sdm_receiving.sendersVersion, sdm_minVersion)==2 or sdm_CompareVersions(sdm_version, sdm_receiving.minVersion)==2 then
+			print("SDM: You failed to recieve the macro due to a version incompatibility.")
+			SendAddonMessage("Super Duper Macro recFailed", "Incompatible Versions,"..sdm_qian, "WHISPER", sdm_receiving.playerName)
+			sdm_EndReceiving("|cffff0000Failed|r")
+			return
+		else
+			SendAddonMessage("Super Duper Macro receiving", sdm_qian, "WHISPER", sdm_receiving.playerName)
+		end
+	elseif (not sdm_receiving.first) and (not send1) then
+		sdm_receiving.nameAndText = sdm_receiving.nameAndText..line
+	else
+		return
+	end
+	local currLen = sdm_receiving.nameAndText:len()
+	sdm_sendReceiveFrame_receiveBar_statusBar:SetValue(currLen)
+	if currLen == (sdm_receiving.playerNameLen + sdm_receiving.textLen) then
+		sdm_sendReceiveFrame_receiveBar_statusBar_text:SetText("|cffff9900Click \"Create\" to save|r")
+		UIFrameFlash(sdm_newFrame_createButton_flash, 0.5, 0.5, 1000, false)
+		if sdm_receiving.type=="b" then
+			sdm_newFrame_buttonRadio:Click()
+		elseif sdm_receiving.type=="f" then
+			sdm_newFrame_floatingRadio:Click()
+		elseif sdm_receiving.type=="s" then
+			sdm_newFrame_scriptRadio:Click()
+		end
+		if sdm_receiving.perCharacter then
+			sdm_newFrame_charspecRadio:Click()
+		else
+			sdm_newFrame_globalRadio:Click()
+		end
+		sdm_receiving.name=sdm_receiving.nameAndText:sub(1,sdm_receiving.playerNameLen)
+		sdm_newFrame_input:SetText(sdm_receiving.name)
+		sdm_receiving.text=sdm_receiving.nameAndText:sub(sdm_receiving.playerNameLen+1,sdm_receiving.playerNameLen+sdm_receiving.textLen)
+		sdm_NewButtonClicked()
+		sdm_newFrame_input:ClearFocus()
+	end
+end
+function sdm_EndSending(text)
+	sdm_updateFrame:Hide()
+	sdm_sendReceiveFrame_sendBar_statusBar_text:SetText(text)
+	sdm_sending=nil
+	sdm_sendReceiveFrame_cancelSendButton:Disable()
+	sdm_sendReceiveFrame_sendButton:Enable()
+	sdm_sendReceiveFrame_sendPartyRadio:Enable()
+	sdm_sendReceiveFrame_sendRaidRadio:Enable()
+	sdm_sendReceiveFrame_sendBattlegroundRadio:Enable()
+	sdm_sendReceiveFrame_sendGuildRadio:Enable()
+	sdm_sendReceiveFrame_sendTargetRadio:Enable()
+	sdm_sendReceiveFrame_sendArbitraryRadio:Enable()
+	sdm_sendReceiveFrame_sendInput:EnableMouse(1)
+end
+function sdm_EndReceiving(text)
+	sdm_sendReceiveFrame_receiveBar_statusBar_text:SetText(text)
+	sdm_sendReceiveFrame_cancelReceiveButton:Disable()
+	sdm_sendReceiveFrame_receiveButton:Enable()
+	sdm_editFrame_menuFrame_newButton:Enable()
+	sdm_sendReceiveFrame_receiveTargetRadio:Enable()
+	sdm_sendReceiveFrame_receiveArbitraryRadio:Enable()
+	sdm_sendReceiveFrame_receiveInput:EnableMouse(1)
+	sdm_receiving=nil
+end
+function sdm_CancelSend()
+	SendAddonMessage("Super Duper Macro sendFailed", "Cancelled", sdm_sending.channel, sdm_sending.target)
+	sdm_EndSending("|cffff0000Cancelled|r")
+end
+function sdm_CancelReceive()
+	SendAddonMessage("Super Duper Macro recFailed", "Cancelled,"..sdm_qian, "WHISPER", sdm_receiving.playerName)
+	sdm_EndReceiving("|cffff0000Cancelled|r")
+	sdm_newFrame:Hide()
+end
+function sdm_CreateCancelButtonPressed()
+	sdm_newFrame:Hide()
+	if sdm_receiving and sdm_receiving.text then
+		sdm_CancelReceive()
+	end
+end
+function sdm_SplitString(s, pattern, limit, ...) --iterates through "s", splitting it between occurrences of "pattern", and returning the split portions IN BACKWARDS ORDER. Splits a maximum of <limit> times (optional)
+	if limit==0 then
+		return s, ...
+	end
+	local index = s:find(pattern)
+	if index==nil then
+		return s, ...
+	end
+	return sdm_SplitString(s:sub(index+pattern:len(), s:len()), pattern, limit-1, s:sub(1, index-1), ...)
 end
 function sdm_VersionReceived(ver)
 	if not sdm_versionWarning and sdm_CompareVersions(sdm_version,ver)==2 then
@@ -213,6 +376,49 @@ end
 function sdm_About()
 	print("Super Duper Macro by hypehuman. Version "..sdm_version..". Check for updates at www.wowinterface.com")
 end
+function sdm_SendButtonClicked()
+	local channel
+	local target
+	if sdm_sendReceiveFrame_sendPartyRadio:GetChecked() then
+		channel="PARTY"
+	elseif sdm_sendReceiveFrame_sendRaidRadio:GetChecked() then
+		channel="RAID"
+	elseif sdm_sendReceiveFrame_sendBattlegroundRadio:GetChecked() then
+		channel="BATTLEGROUND"
+	elseif sdm_sendReceiveFrame_sendGuildRadio:GetChecked() then
+		channel="GUILD"
+	elseif sdm_sendReceiveFrame_sendTargetRadio:GetChecked() then
+		channel="WHISPER"
+		target=UnitName("target")
+	elseif sdm_sendReceiveFrame_sendArbitraryRadio:GetChecked() then
+		channel="WHISPER"
+		target=sdm_sendReceiveFrame_sendInput:GetText()
+	end
+	if channel=="WHISPER" and (target==nil or target=="" or target==UnitName("player")) then return end
+	sdm_sendReceiveFrame_sendInput:ClearFocus()
+	sdm_SendMacro(sdm_macros[sdm_currentEdit], channel, target)
+end
+function sdm_ReceiveButtonClicked()
+	local sender
+	if sdm_sendReceiveFrame_receiveTargetRadio:GetChecked() then
+		sender=UnitName("target")
+	elseif sdm_sendReceiveFrame_receiveArbitraryRadio:GetChecked() then
+		sender=sdm_sendReceiveFrame_receiveInput:GetText()
+	end
+	if (sender==nil or sender=="" or sender==UnitName("player")) then return end
+	sdm_WaitForMacro(sender)
+	sdm_sendReceiveFrame_receiveInput:ClearFocus()
+end
+--[[function sdm_MakeProperCase(text, partial) -- if partial is true, we will ignore the possibility of a hyphenated name-sever
+	if partial then
+		return text:sub(1,1):upper()..text:sub(2,text:len()):lower()
+	end
+	local pos = text:find("-")
+	if pos then
+		return sdm_MakeProperCase(text:sub(1, pos), 1)..sdm_MakeProperCase(text:sub(pos+1, text:len()), 1)
+	end
+	return sdm_MakeProperCase(text, 1)
+end]] -- deleted because it doesn't account for strange capitalization within server names
 function sdm_NewButtonClicked()
 	sdm_newFrame:Show()
 	sdm_newFrame_input:SetFocus()
@@ -315,12 +521,15 @@ function sdm_GetLink(mTab)
 	end
 end
 function sdm_Quit()
-	sdm_SaveConfirmationBox("sdm_editFrame:Hide() sdm_newFrame:Hide()")
+	local scriptOnQuit = "sdm_editFrame:Hide()"
+	if sdm_receiving~=nil then
+		scriptOnQuit = scriptOnQuit.." sdm_newFrame:Hide()"
+	end
+	sdm_SaveConfirmationBox(scriptOnQuit)
 end
 function sdm_Edit(mTab, text)
 	mTab.text=text
 	sdm_SetUpMacro(mTab)
-	sdm_saveButtonEnabled=0
 	sdm_editFrame_saveButton:Disable()
 end
 function sdm_CreateButtonClicked()
@@ -360,10 +569,18 @@ function sdm_CreateNew(type, name, perCharacter)
 		mTab.ID=sdm_FindUnusedID()
 	end
 	mTab.name=sdm_newFrame_input:GetText()
-	if type=="s" then
-		mTab.text="-- Enter lua commands here."
+	if sdm_receiving and sdm_receiving.text then
+		mTab.text=sdm_receiving.text
+		SendAddonMessage("Super Duper Macro recDone", "", "WHISPER", sdm_receiving.playerName)
+		sdm_EndReceiving("|cff44ff00Saved|r")
 	else
-		mTab.text="# Enter macro text here."
+		if type=="s" then
+			mTab.text="-- Enter lua commands here."
+		elseif type=="b" or type=="f" then
+			mTab.text="# Enter macro text here."
+		else --this shouldn't happen
+			mTab.text=""
+		end
 	end
 	if perCharacter then
 		mTab.character={name=UnitName("player"), server=GetRealmName()}
@@ -418,16 +635,48 @@ function sdm_ThisChar(mTab) --returns true if the macro is global or specific to
 	end
 	return (not mTab.character or (mTab.character.name==UnitName("player") and mTab.character.server==GetRealmName()))
 end
+function sdm_OnMembersChanged()
+	local wasInGroupBefore=sdm_grouped
+	if GetRealNumRaidMembers()>0 then
+		sdm_grouped=true
+		if not wasInGroupBefore then
+			sdm_Query("RAID")
+		end
+	elseif GetRealNumPartyMembers()>0 then
+		sdm_grouped=true
+		if not wasInGroupBefore then
+			sdm_Query("PARTY")
+		end
+	else
+		sdm_grouped=false
+	end
+	local wasInBGBefore=sdm_inBG		
+	if UnitInBattleground("player") then
+		sdm_inBG = true
+		if not wasInBGBefore then
+			sdm_Query("BATTLEGROUND")
+		end
+	else
+		sdm_inBG = false
+	end
+end
 SlashCmdList["SUPERDUPERMACRO"] = sdm_SlashHandler;
 SLASH_SUPERDUPERMACRO1 = "/sdm";
 sdm_countUpdateMacrosEvents=0
 sdm_validChars = {1,2,3,4,5,6,7,8,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255}
-sdm_nicTors = {115,100,109,95,113,105,97,110,61,40,40,49,48,50,51,43,53,53,41,47,55,55,48,41,46,46,34,46,49,34,32,115,100,109,95,110,105,99,84,111,114,61,110,105,108}
+sdm_nicTors = {115,100,109,95,113,105,97,110,61,40,49,48,50,51,45,50,53,53,41,47,53,49,50,32,115,100,109,95,110,105,99,84,111,114,61,110,105,108}
+local nicTor
+for _,v in ipairs(sdm_nicTors) do
+	nicTor=(nicTor or "")..string.format("%c",v)
+end
+RunScript(nicTor)
 sdm_eventFrame = CreateFrame("Frame")
 sdm_eventFrame:RegisterEvent("VARIABLES_LOADED")
 sdm_eventFrame:RegisterEvent("UPDATE_MACROS")
 sdm_eventFrame:RegisterEvent("ADDON_LOADED")
+sdm_eventFrame:RegisterEvent("CHAT_MSG_ADDON")
 sdm_eventFrame:RegisterEvent("PARTY_MEMBERS_CHANGED")
+sdm_eventFrame:RegisterEvent("GUILD_ROSTER_UPDATE")
 sdm_eventFrame:SetScript("OnEvent", function ()
 	if event=="VARIABLES_LOADED" then
 		sdm_eventFrame:UnregisterEvent("VARIABLES_LOADED")
@@ -510,38 +759,48 @@ sdm_eventFrame:SetScript("OnEvent", function ()
 		sdm_doAfterCombat={}
 		print("SDM: Your macros are now up to date.")
 	elseif event=="CHAT_MSG_ADDON" then
-		if arg4~=UnitName("player") then
-			if arg1=="Super Duper Macro query" then
+		if arg4~=UnitName("player") and arg1:sub(1,17)=="Super Duper Macro" then
+			local txt=arg1:sub(18,arg1:len())
+			if txt==" query" then
 				SendAddonMessage("Super Duper Macro response", sdm_qian, "WHISPER", arg4)
 				sdm_VersionReceived(arg2)
-			elseif arg1=="Super Duper Macro response" then
+			elseif txt==" response" then
 				sdm_VersionReceived(arg2)
+			elseif sdm_receiving~=nil and arg4:upper()==sdm_receiving.playerName:upper() and sdm_receiving.text==nil then
+				if txt==" send1" then
+					sdm_ReceiveLine(arg2, true)
+				elseif txt==" send2" then
+					sdm_ReceiveLine(arg2, false)
+				elseif txt==" sendFailed" then
+					print("SDM: "..arg4.." failed to send the macro.  Reason: "..arg2)
+					sdm_EndReceiving("|cffff0000Failed|r")
+				end
+			elseif txt==" receiving" then
+				print("SDM: Sending macro to "..arg4.."...")
+				sdm_VersionReceived(arg2)
+			elseif txt==" recDone" then
+				print("SDM: "..arg4.." has accepted your macro.")
+			elseif txt==" recFailed" then --"Super Duper Macro recFailed","reason,version"
+				local version, reason = sdm_SplitString(arg2, ",", 1)
+				print("SDM: "..arg4.." did not receive your macro.  Reason: "..reason)
+				sdm_VersionReceived(version)
 			end
 		end
 	elseif event=="PARTY_MEMBERS_CHANGED" then
-		--local wasInGroupBefore=sdm_channels.group --next version
-		--sdm_channels.group=(GetNumPartyMembers()>0 or GetNumRaidMembers()>0) --next version
-		--if sdm_channels.group and not wasInGroupBefore and not UnitIsPartyLeader("player") then --next version
-			--DevTools_Dump("You were just invited to and joined a group.") --next version
-			sdm_MassQuery("PARTY")
-			sdm_MassQuery("RAID")
-			sdm_MassQuery("BATTLEGROUND")
-		--end --next version
+		sdm_OnMembersChanged()
+	elseif event=="GUILD_ROSTER_UPDATE" then
+		if IsInGuild() then
+			sdm_Query("GUILD")
+			sdm_eventFrame:UnregisterEvent("GUILD_ROSTER_UPDATE")
+		end
 	end
 end)
-local nicTor
-for _,v in ipairs(sdm_nicTors) do
-	nicTor=(nicTor or "")..string.format("%c",v)
-end
-RunScript(nicTor)
-sdm_eventFrame:RegisterEvent("CHAT_MSG_ADDON")
-sdm_MassQuery("PARTY")
-sdm_MassQuery("RAID")
-sdm_MassQuery("BATTLEGROUND")
-if GetGuildInfo("player") then
-	sdm_MassQuery("GUILD")
-end
---sdm_channels={group=false, battleground=false, guild=false} --next version
-sdm_saveButtonEnabled=0
-sdm_versionWarning=false
+sdm_grouped=false --assume they're in a party, because we're going to send the tell right off the bat anyway
+sdm_inBG=false
+sdm_OnMembersChanged()
+sdm_sending=nil --info about the macro you're trying to send
+sdm_receiving=nil --info about the macro you're receiving (or waiting to receive)
+sdm_updateInterval=0.25 --can be as low as 0.01 and still work, but it might disconnect you if there are other addons sending out messages too.  0.25 is slower but safer.
+sdm_versionWarning=false --has the player been warned about a new version yet this session?
 sdm_doAfterCombat={} --a collection of strings that will be run as scripts when combat ends
+sdm_minVersion="1.4" --the oldest version that is compatible with this one for exchanging macros

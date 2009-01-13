@@ -1,5 +1,5 @@
 Super Duper Macro
-version 1.4.1
+version 1.5
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -16,7 +16,7 @@ This mod allows you to make two types of macros:
 Features yet to be implemented:
 ¥ Clickable, scrollable menu of macros with collapsible drop-down bars (like the quest log interface)
 ¥ A way to change button-macro icons from within the SDM interface (currently you have to switch over to the regular macro window to do this)
-¥ Make the interface more pretty
+¥ Allow users to share macros with each other in-game
 
 Suggestions and bug reports are always welcome.  You can post comments on the wowinterface.com page for this addon, or if you want to add something yourself, you can upload it in the "Optional Files" tab.
 
@@ -29,6 +29,10 @@ Special thanks to:
 
 Change Log
 
+1.5 (1/12/09)
+¥ÊAdded the ability to share macros with other players (click "Send/Receive" to check it out!)
+¥ Fixed a bug where the Save button was sometimes inappropriately disabled
+
 1.4.1 (1/9/09)
 ¥ÊFixed a minor bug that sometimes occurred while loading
 
@@ -38,7 +42,7 @@ Change Log
 ¥ SDM will no longer attempt to create, delete, or modify macros during combat.  You can still do these things, but the changes will not take effect until after combat.
 ¥ÊDeleting floating macros will now actually disable them
 ¥ Greatly increased the efficiency of operations like saving and deleting
-¥ÊIncreased the limit on the number of lines to 1023, and made the number of lines limitless (actually, the maximum length of any string is 2^24 characters, so the limit is somewhere below that, but that's the length of about 20 average novels and it will probably crash your client).
+¥ÊIncreased the limit on the length of each line to 1023, and made the number of lines limitless (actually, the maximum length of any string is 2^24 characters, so the limit is somewhere below that, but that's the length of about 20 average novels and it will probably crash your client).
 ¥ÊChanged the structure of the macro frames to eliminate the chance of a recently discovered "C stack overflow" error on very long macros
 
 1.3.1 (12/16/08)
