@@ -1,12 +1,12 @@
 Super Duper Macro
-version 1.5.1
+version 1.6
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
 
 Open the interface by typing /sdm
 
-This addon allows you to create macros beyond the 255-character limit, and even beyond the 1023-character macrotext limit.  However, no individual line in a macro may be more than 1023 characters long (you will get a warning).  The number of lines is unlimited.
+This addon allows you to create macros beyond the 255-character limit, and even beyond the 1023-character macrotext limit.  However, no individual line in a macro may be more than 1023 characters long (you will get a warning).  The number of lines is unlimited.  Super Duper Macro also allows you to share macros with your friends in-game.
 
 This mod allows you to make two types of macros:
 ¥ button macros ("b") can be placed on your action bar because they tie themselves to a regular macro.  Therefore, you can only make a limited number of these (36 global and 36 character-specific for each character).  To set an icon for a button macro, use the regular macro interface (/macro).
@@ -14,9 +14,9 @@ This mod allows you to make two types of macros:
 ¥ You can also make lua scripts ("s") of unlimited length that you can call using "/sdm run <name>" or via sdm_RunScript("name")
 
 Features yet to be implemented:
-¥ Clickable, scrollable menu of macros with collapsible drop-down bars (like the quest log interface)
-¥ A way to change button-macro icons from within the SDM interface (currently you have to switch over to the regular macro window to do this)
-¥ Allow users to share macros with each other in-game
+¥ Organized (or organizable) macro list -- see the "Comments" section to join the discussion on how this should be done!
+¥ÊImplement a way to pull-out macros during combat
+¥ Add ChattThrottleLib to make macro sharing faster
 
 Suggestions and bug reports are always welcome.  You can post comments on the wowinterface.com page for this addon, or if you want to add something yourself, you can upload it in the "Optional Files" tab.
 
@@ -28,6 +28,15 @@ Special thanks to:
 
 
 Change Log
+
+1.6 (1/19/09)
+¥ Changed the slash command to run a floating macro.  Also added a command to run button macros.  Click the "Usage..." button for more details.
+¥ÊAdded an interface for changing the name and icon of a macro within the SDM window.
+¥ Button macro names now conflict with each other (unless they are specific to different characters)
+¥ Disallowed some characters in macro/script names because they were causing problems.  You may find that some of these problematic still work on button macros, for which you can select a different name in the Change Name/Icon frame.
+¥ÊChanged the appearance of button macros when viewed in the default macro frame
+¥ Added a clickable, scrolling menu of macros.  This will be further improved later.
+¥ÊSeveral efficiency improvements.  As a consequence, your SDM-created button macros will be removed from action bars and lose thieir icons.  Sorry!
 
 1.5.1 (1/12/09)
 ¥ÊMinor bug fixes
