@@ -1,5 +1,5 @@
 Super Duper Macro
-version 1.6
+version 1.6.1
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -28,6 +28,9 @@ Special thanks to:
 
 
 Change Log
+
+1.6.1 (1/27/09)
+¥ÊFixed a serious bug that happened upon login after leaving "different name on button" blank.  You may now safely leave it blank if you wish to show no text on the button.
 
 1.6 (1/19/09)
 ¥ Changed the slash command to run a floating macro.  Also added a command to run button macros.  Click the "Usage..." button for more details.
