@@ -1,29 +1,26 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/">
 	<Button name="sdm_listItemTemplate" virtual="true">
-		<Size x="234" y="70" />
 		<Layers>
 			<Layer level="ARTWORK">
 				<Texture name="$parent_icon">
-					<Size x="64" y="64" />
+				</Texture>
+				<Texture name="$parent_highlight" file="Interface\QuestFrame\UI-QuestLogTitleHighlight" alphaMode="ADD" hidden="true">
 					<Anchors>
-						<Anchor point="LEFT">
-							<Offset x="3" y="0" />
-						</Anchor>
+						<Anchor point="TOPLEFT"/>
+						<Anchor point="BOTTOMRIGHT"/>
 					</Anchors>
 				</Texture>
 			</Layer>
 		</Layers>
 		<ButtonText name="$parentName" inherits="GameFontNormal" justifyH="left" nonSpaceWrap="true">
 			<Anchors>
-				<Anchor point="TOPLEFT">
-					<Offset x="70" y="0" />
-				</Anchor>
-				<Anchor point="BOTTOMRIGHT" />
+				<Anchor point="TOP"/>
+				<Anchor point="BOTTOMRIGHT"/>
 			</Anchors>
 		</ButtonText>
 		<Scripts>
 			<OnClick>
-				sdm_SelectItem(self)
+				sdm_ListItemClicked(self)
 			</OnClick>
 			<OnEnter>
 				if sdm_listLocked then return end
@@ -151,40 +148,20 @@
 				</Scripts>
 			</Button>
 			<ScrollFrame name="$parent_macrosScroll" inherits="UIPanelScrollFrameTemplate">
-				<Size x="256" y="326" />
+				<Size x="256" y="299" />
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parent">
-						<Offset x="26" y="-79"/>
+					<Anchor point="BOTTOMLEFT" relativeTo="$parent">
+						<Offset x="26" y="42"/>
 					</Anchor>
 				</Anchors>
 				<ScrollChild>
 					<Frame name="$parent_macroList">
-						<Size x="1000" y="50" />
-						<Anchors>
-							<Anchor point="TOPLEFT">
-								<Offset x="26" y="-79" />
-							</Anchor>
-						</Anchors>
-						<Frames>
-							<Frame name="$parent_highlight">
-								<Size x="234" y="70" />
-								<Layers>
-									<Layer level="ARTWORK">
-										<Texture name="$parentTexture" file="Interface\QuestFrame\UI-QuestLogTitleHighlight" alphaMode="ADD">
-											<Size x="234" y="70" />
-											<Anchors>
-												<Anchor point="TOPLEFT" />
-											</Anchors>
-										</Texture>
-									</Layer>
-								</Layers>
-							</Frame>
-						</Frames>
+						<Size x="256" y="50" />
 					</Frame>
 				</ScrollChild>
 			</ScrollFrame>
 			<Frame name="$parent_listBackground">
-				<Size x="288" y="335" />
+				<Size x="288" y="308" />
 				<Anchors>
 					<Anchor point="TOPRIGHT" relativeTo="$parent_macrosScroll">
 						<Offset x="27" y="5" />
@@ -199,7 +176,48 @@
 					</TileSize>
 				</Backdrop>
 			</Frame>
- 			<Button name="$parent_quitButton" inherits="UIPanelCloseButton">
+			<Frame name="$parent_charFilterDropdown" inherits="UIDropDownMenuTemplate" enableMouse="true">
+				<Anchors>
+					<Anchor point="BOTTOMRIGHT" relativeTo="$parent_macrosScroll" relativePoint="TOPRIGHT">
+						<Offset>
+							<AbsDimension x="42" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						sdm_CharDropdownLoaded(self);
+					</OnLoad>
+				</Scripts>
+			</Frame>
+			<Frame name="$parent_typeFilterDropdown" inherits="UIDropDownMenuTemplate" enableMouse="true">
+				<Anchors>
+					<Anchor point="RIGHT" relativeTo="$parent_charFilterDropdown" relativePoint="LEFT">
+						<Offset>
+							<AbsDimension x="32" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Filters:">
+							<Anchors>
+								<Anchor point="RIGHT" relativePoint="LEFT">
+									<Offset>
+										<AbsDimension x="14" y="3"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnLoad>
+						sdm_TypeDropdownLoaded(self);
+					</OnLoad>
+				</Scripts>
+			</Frame>
+			<Button name="$parent_quitButton" inherits="UIPanelCloseButton">
 				<Anchors>
 					<Anchor point="TOPRIGHT">
 						<Offset x="3" y="-8" />
@@ -256,6 +274,35 @@
 					</OnClick>
 				</Scripts>
 			</Button>
+			<Slider name="$parent_iconSizeSlider" orientation="HORIZONTAL" enableMouse="true" minValue="13" maxValue="64" defaultValue="36">
+				<Size>
+					<AbsDimension x="144" y="17"/>
+				</Size>
+				<Anchors>
+					<Anchor point="BOTTOMLEFT">
+						<Offset x="25" y="16" />
+					</Anchor>
+				</Anchors>
+				<HitRectInsets>
+					<AbsInset left="0" right="0" top="-10" bottom="-10"/>
+				</HitRectInsets>
+				<Backdrop bgFile="Interface\Buttons\UI-SliderBar-Background" edgeFile="Interface\Buttons\UI-SliderBar-Border" tile="true">
+					<EdgeSize>
+						<AbsValue val="8"/>
+					</EdgeSize>
+					<TileSize>
+						<AbsValue val="8"/>
+					</TileSize>
+					<BackgroundInsets>
+						<AbsInset left="3" right="3" top="6" bottom="6"/>
+					</BackgroundInsets>
+				</Backdrop>
+				<ThumbTexture name="$parentThumb" file="Interface\Buttons\UI-SliderBar-Button-Horizontal">
+					<Size>
+						<AbsDimension x="32" y="32"/>
+					</Size>
+				</ThumbTexture>
+			</Slider>
 			<Button name="$parent_linkToMacroFrame" inherits="UIPanelButtonTemplate" text="Standard Macros">
 				<Size>
 					<AbsDimension x="120" y="19"/>
@@ -287,8 +334,8 @@
 			<ScrollFrame name="$parent_editScrollFrame" inherits="UIPanelScrollFrameTemplate">
 				<Size x="481" y="326" />
 				<Anchors>
-					<Anchor point="TOPRIGHT">
-						<Offset x="-38" y="-79" />
+					<Anchor point="BOTTOMRIGHT">
+						<Offset x="-38" y="42" />
 					</Anchor>
 				</Anchors>
 				<ScrollChild>
@@ -306,9 +353,11 @@
 								sdm_textChanged=-2
 							</OnTextSet>
 							<OnTextChanged>
-								sdm_textChanged=sdm_textChanged+1
-								if (sdm_textChanged or 1)>0 then
-									sdm_mainFrame_saveButton:Enable()
+								if sdm_textChanged then
+									sdm_textChanged=sdm_textChanged+1
+									if sdm_textChanged>0 then
+										sdm_mainFrame_saveButton:Enable()
+									end
 								end
 							</OnTextChanged>
 						</Scripts>
@@ -346,7 +395,6 @@
 			<OnShow>
 				PlaySound "igCharacterInfoOpen"
 				self:SetPoint("TOPLEFT", "UIParent", "TOPLEFT", 0, -104)
-				sdm_UpdateCurrentEdit()
 			</OnShow>
 			<OnHide>
 				PlaySound "igCharacterInfoClose"
@@ -384,7 +432,7 @@
 				</Anchors>
 				<Layers>
 					<Layer level="ARTWORK">
-						<FontString name="$parent_Text" inherits="GameFontNormal" text="Button">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Button Macro">
 							<Anchors>
 								<Anchor point="LEFT" relativePoint="RIGHT">
 								</Anchor>
@@ -395,6 +443,10 @@
 				<Scripts>
 					<OnLoad>
 						self:SetChecked(1)
+						_,outline,_,fill,text = self:GetRegions()
+						outline:SetVertexColor(sdm_GetColor("b"))
+						fill:SetVertexColor(sdm_GetColor("b"))
+						text:SetTextColor(sdm_GetColor("b"))
 					</OnLoad>
 					<OnClick>
 						self:SetChecked(1)
@@ -409,15 +461,26 @@
 				</Anchors>
 				<Layers>
 					<Layer level="ARTWORK">
-						<FontString name="$parent_Text" inherits="GameFontNormal" text="Floating">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Floating Macro">
 							<Anchors>
 								<Anchor point="LEFT" relativePoint="RIGHT">
 								</Anchor>
 							</Anchors>
+							<Scripts>
+								<OnLoad>
+									self:SetTextColor(sdm_GetColor("f"))
+								</OnLoad>
+							</Scripts>
 						</FontString>
 					</Layer>
 				</Layers>
 				<Scripts>
+					<OnLoad>
+						_,outline,_,fill,text = self:GetRegions()
+						outline:SetVertexColor(sdm_GetColor("f"))
+						fill:SetVertexColor(sdm_GetColor("f"))
+						text:SetTextColor(sdm_GetColor("f"))
+					</OnLoad>
 					<OnClick>
 						sdm_newFrame_buttonRadio:SetChecked(nil)
 						self:SetChecked(1)
@@ -436,10 +499,21 @@
 								<Anchor point="LEFT" relativePoint="RIGHT">
 								</Anchor>
 							</Anchors>
+							<Scripts>
+								<OnLoad>
+									self:SetTextColor(sdm_GetColor("s"))
+								</OnLoad>
+							</Scripts>
 						</FontString>
 					</Layer>
 				</Layers>
 				<Scripts>
+					<OnLoad>
+						_,outline,_,fill,text = self:GetRegions()
+						outline:SetVertexColor(sdm_GetColor("s"))
+						fill:SetVertexColor(sdm_GetColor("s"))
+						text:SetTextColor(sdm_GetColor("s"))
+					</OnLoad>
 					<OnClick>
 						sdm_newFrame_buttonRadio:SetChecked(nil)
 						sdm_newFrame_floatingRadio:SetChecked(nil)
@@ -451,7 +525,7 @@
 				<Anchors>
 					<Anchor point="LEFT" relativeTo="$parent_buttonRadio" relativePoint="RIGHT">
 						<Offset>
-							<AbsDimension x="100" y="0"/>
+							<AbsDimension x="103" y="0"/>
 						</Offset>
 					</Anchor>
 				</Anchors>
@@ -569,7 +643,11 @@
 			<OnMouseDown> sdm_mainFrame:StartMoving();  </OnMouseDown>
 			<OnMouseUp>  sdm_mainFrame:StopMovingOrSizing(); </OnMouseUp>
 			<OnDragStop> sdm_mainFrame:StopMovingOrSizing(); </OnDragStop>
+			<OnShow>
+				sdm_listLocked = true
+			</OnShow>
 			<OnHide>
+				sdm_listLocked = false
 				UIFrameFlashStop(sdm_newFrame_createButton_flash)
 			</OnHide>
 		</Scripts>
@@ -1085,11 +1163,11 @@
 			<OnMouseUp>  sdm_mainFrame:StopMovingOrSizing(); </OnMouseUp>
 			<OnDragStop> sdm_mainFrame:StopMovingOrSizing(); </OnDragStop>
 			<OnHide>
-				if sdm_sending==nil then
+				if (not sdm_sending) then
 					sdm_sendReceiveFrame_sendBar_statusBar:SetValue(0)
 					sdm_sendReceiveFrame_sendBar_statusBar_text:SetText("")
 				end
-				if sdm_receiving==nil then
+				if (not sdm_receiving) then
 					sdm_sendReceiveFrame_receiveBar_statusBar:SetValue(0)
 					sdm_sendReceiveFrame_receiveBar_statusBar_text:SetText("")
 				end

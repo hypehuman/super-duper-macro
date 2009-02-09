@@ -46,70 +46,19 @@ end
 function sdm_GetLinkText(nextName)
 	return "/click [btn:5]"..nextName.." Button5;[btn:4]"..nextName.." Button4;[btn:3]"..nextName.." MiddleButton;[btn:2]"..nextName.." RightButton;"..nextName
 end
-function sdm_UpdateCurrentEdit(setTo) --Any natural number will select a macro by ID.  0 will deselect.  nil will not change it, but will still update appropriately.
-	if setTo then
-		sdm_currentEdit = setTo
-	end
-	if sdm_macros[sdm_currentEdit]~=nil then --currentEdit points to a real macro
-		local listi=1
-		local listItem = getglobal(sdm_listItemPrefix..listi)
-		while listItem do
-			if listItem.index==sdm_currentEdit then
-				sdm_mainFrame_macrosScroll_macroList_highlight:Show()
-				sdm_mainFrame_macrosScroll_macroList_highlight:SetPoint("TOPLEFT", listItem, "TOPLEFT")
-				sdm_currentListItem=listItem
-				break
-			end
-			listi = listi+1
-			listItem = getglobal(sdm_listItemPrefix..listi)
-		end
-		sdm_mainFrame_deleteButton:Enable()
-		sdm_mainFrame_getLinkButton:Enable()
-		sdm_mainFrame_changeIconButton:Enable()
-		sdm_mainFrame_editScrollFrame:Show()
-		sdm_mainFrame_editScrollFrame_text:SetText(sdm_macros[sdm_currentEdit].text or "")
-		sdm_mainFrame_saveButton:Disable()
-		if not sdm_sending then
-			sdm_sendReceiveFrame_sendButton:Enable()
-		end
-	elseif sdm_currentEdit==0 then
-		sdm_mainFrame_macrosScroll_macroList_highlight:Hide()
-		sdm_mainFrame_deleteButton:Disable()
-		sdm_mainFrame_getLinkButton:Disable()
-		sdm_mainFrame_changeIconButton:Disable()
-		sdm_mainFrame_editScrollFrame:Hide()
-		sdm_mainFrame_saveButton:Disable()
-		sdm_sendReceiveFrame_sendButton:Disable()
-	else --currentEdit points to no real macro, so let's set it to the next lowest one.
-		local last
-		local result
-		for i in ipairs(sdm_macros) do
-			if i>sdm_currentEdit then
-				result=last
-				break
-			end
-			last = i
-		end
-		sdm_UpdateCurrentEdit(result or last or 0)
-		return
-	end
-end
 function sdm_SetUpMacro(mTab)
 	local type = mTab.type
 	if type~="b" and type~="f" then
 		return
 	end
 	local text = mTab.text
-	local perCharacter = (mTab.character)~=nil
+	local perCharacter = mTab.character~=nil
 	local ID = mTab.ID
 	local icon = mTab.icon
 	local charLimit = 255
 	if type=="b" then
 		text="#sdm"..sdm_numToChars(ID).."\n"..text
 	end
-	--[[elseif type=="f" then
-		charLimit = 1023
-	end]]
 	local frameText = ""
 	local nextFrameName = "sdh"..sdm_numToChars(ID)
 	local linkText = "\n"..sdm_GetLinkText(nextFrameName)
@@ -162,88 +111,11 @@ function sdm_SetUpMacroFrames(clickerName, text, currentLayer) --returns the fra
 		return sdm_SetUpMacroFrames(clickerName, nextLayerText, currentLayer+1)
 	end
 end
-function sdm_UpdateMacroList()
-	local listi=1
-	local listItem = getglobal(sdm_listItemPrefix..listi)
-	for i,v in ipairs(sdm_macros) do
-		if true then --this will later be replaced with the conditions for showing a macro (probably based on tab dropdown status)
-			if listItem==nil then
-				listItem = CreateFrame("Button", "$parent_listItem"..listi, sdm_mainFrame_macrosScroll_macroList, "sdm_listItemTemplate")
-			end
-			listItem.index=i
-			sdm_UpdateListItem(listItem)
-			if listi==1 then
-				listItem:SetPoint("TOPLEFT")
-			else
-				listItem:SetPoint("TOPLEFT", sdm_listItemPrefix..(listi-1), "BOTTOMLEFT")
-			end
-			if v.type=="b" and sdm_UsedByThisChar(v) then
-				listItem:RegisterForDrag("LeftButton")
-				listItem:SetScript("OnDragStart", function() PickupMacro(sdm_GetMacroIndex(sdm_macros[this.index].ID)) end)
-			else
-				listItem:RegisterForDrag(nil)
-			end
-			listItem:Show()
-			listi=listi+1
-			listItem = getglobal(sdm_listItemPrefix..listi)
-			--[[
-			if v.type=="b" then
-				local index = sdm_GetMacroIndex(v.ID)
-					if index then
-					local macbutt=getglobal("MacroButton"..index)
-					--local replacement=CreateFrame("BUTTON", "MacroButton"..index.."Replacement")
-					--local possiblyAnchored={getglobal("MacroButton"..(i+1)), getglobal("MacroButton"..(i+6)), getglobal("MacroButton"..(i+1).."Replacement"), getglobal("MacroButton"..(i+6).."Replacement")}
-					--for i,v in ipairs(possiblyAnchored) do
-						
-					--end
-					macbutt:SetParent(sdm_mainFrame_macrosScroll_macroList)
-					print(index)
-					print(macbutt:GetName(), sdm_listItemPrefix..(listi-1))
-					macbutt:SetPoint("TOPLEFT", sdm_listItemPrefix..(listi-1), "BOTTOMLEFT")
-					RunScript(sdm_listItemPrefix..listi.."="..macbutt:GetName())
-					listi=listi+1
-					listItem = getglobal(sdm_listItemPrefix..listi)
-				end
-			end
-			]]
-		end
-	end
-	while listItem do
-		listItem:Hide()
-		listi=listi+1
-		listItem = getglobal(sdm_listItemPrefix..listi)
-	end
-	sdm_UpdateCurrentEdit()
-end
-function sdm_UpdateListItem(listItem)
-	local mTab=sdm_macros[listItem.index]
-	local infoLine = "\""..mTab.name.."\" type "..mTab.type
-	if mTab.character then infoLine=infoLine.." ("..mTab.character.name.." of "..mTab.character.realm..")" end
-	listItem:SetText("|cffffd100"..infoLine.."|r")
-	if mTab.icon==1 then
-		if mTab.type=="b" and sdm_UsedByThisChar(mTab) then
-			_,texture = GetMacroInfo(sdm_GetMacroIndex(mTab.ID))
-		else
-			texture = "Interface\\MacroFrame\\MacroFrame-Icon"
-		end
-	else
-		texture = GetMacroIconInfo(mTab.icon)
-	end
-	getglobal(listItem:GetName().."_icon"):SetTexture(texture)
-end
-function sdm_ListItemEntered(f)
-	local t = f:GetText()
-	f:SetText("|cffffffff"..t:sub(11))
-end
-function sdm_ListItemLeft(f)
-	local t = f:GetText()
-	f:SetText("|cffffd100"..t:sub(11))
-end
 function sdm_Query(channel, target) --next version: have a single token for party and raid, then decide here.
 	SendAddonMessage("Super Duper Macro query", sdm_qian, channel, target)
 end
 function sdm_SendMacro(mTab, chan, tar)
-	if sdm_sending~=nil then
+	if sdm_sending then
 		print("SDM: You are already sending something.")
 		return
 	end
@@ -296,7 +168,7 @@ function sdm_OnUpdate(self, elapsed) --used for sending macros
 	end
 end
 function sdm_WaitForMacro(name)
-	if sdm_receiving~=nil then
+	if sdm_receiving then
 		print("SDM: You are already receiving or waiting.")
 		return
 	end
@@ -383,7 +255,7 @@ function sdm_EndSending(text)
 	sdm_sendReceiveFrame_sendBar_statusBar_text:SetText(text)
 	sdm_sending=nil
 	sdm_sendReceiveFrame_cancelSendButton:Disable()
-	if sdm_currentEdit>0 then
+	if sdm_currentEdit then
 		sdm_sendReceiveFrame_sendButton:Enable()
 	end
 	sdm_sendReceiveFrame_sendPartyRadio:Enable()
@@ -433,7 +305,7 @@ function sdm_SplitString(s, pattern, limit, ...) --iterates through "s", splitti
 		return s, ...
 	end
 	local index = s:find(pattern)
-	if index==nil then
+	if (not index) then
 		return s, ...
 	end
 	return sdm_SplitString(s:sub(index+pattern:len()), pattern, limit-1, s:sub(1, index-1), ...)
@@ -466,9 +338,9 @@ function sdm_CompareVersions(firstString, secondString) --returns 1 if the first
 	local numbers = {}
 	while 1 do
 		for i=1, 2 do
-			if strings[i]==nil then strings[i]="0" end
+			if (not strings[i]) then strings[i]="0" end
 			local indexOfPeriod=(strings[i]):find("%.")
-			if indexOfPeriod==nil then
+			if (not indexOfPeriod) then
 				numbers[i]=strings[i]
 				strings[i]=nil
 			else
@@ -481,13 +353,79 @@ function sdm_CompareVersions(firstString, secondString) --returns 1 if the first
 			return 1
 		elseif numbers[2] > numbers[1] then
 			return 2
-		elseif strings[1]==nil and strings[2]==nil then
+		elseif (not strings[1]) and (not strings[2]) then
 			return 0
 		end
 	end
 end
 function sdm_About()
 	print("Super Duper Macro by hypehuman. Version "..sdm_version..". Check for updates at www.wowinterface.com")
+end
+function sdm_TypeDropdownLoaded(self)
+	if not sdm_listFilters then
+		self:RegisterEvent("VARIABLES_LOADED")
+		self:SetScript("OnEvent", function()
+			sdm_TypeDropdownLoaded(self)
+			self:UnregisterAllEvents()
+			self:SetScript("OnEvent", nil)
+		end)
+		return
+	end
+	UIDropDownMenu_Initialize(self, sdm_InitializeTypeDropdown);
+	UIDropDownMenu_SetText(self, "Type");
+	UIDropDownMenu_SetWidth(self, 52);
+end
+function sdm_CharDropdownLoaded(self)
+	if not sdm_listFilters then
+		self:RegisterEvent("VARIABLES_LOADED")
+		self:SetScript("OnEvent", function()
+			sdm_CharDropdownLoaded(self)
+			self:UnregisterAllEvents()
+			self:SetScript("OnEvent", nil)
+		end)
+		return
+	end
+	UIDropDownMenu_Initialize(self, sdm_InitializeCharDropdown);
+	UIDropDownMenu_SetText(self, "Character");
+	UIDropDownMenu_SetWidth(self, 75);
+end
+function sdm_InitializeTypeDropdown()
+	local info = UIDropDownMenu_CreateInfo();
+	local buttons = {
+		{val="b", txt="Button Macros"},
+		{val="f", txt="Floating Macros"},
+		{val="s", txt="Scripts"}
+	}
+	
+	for _,v in ipairs(buttons) do
+		info.value = v.val;
+		info.text = sdm_GetColor(v.val, v.txt);
+		info.func = sdm_FilterButtonClicked;
+		info.checked = sdm_listFilters[info.value];
+		info.keepShownOnClick = 1;
+		UIDropDownMenu_AddButton(info);		
+	end
+end
+function sdm_InitializeCharDropdown()
+	local info = UIDropDownMenu_CreateInfo();
+	local buttons = {
+		{val="global", txt="Global"},
+		{val="true", txt="This Character"},
+		{val="false", txt="Other Characters"}
+	}
+	
+	for _,v in ipairs(buttons) do
+		info.value = v.val;
+		info.text = sdm_GetColor(v.val, v.txt);
+		info.func = sdm_FilterButtonClicked;
+		info.checked = sdm_listFilters[info.value];
+		info.keepShownOnClick = 1;
+		UIDropDownMenu_AddButton(info);	
+	end
+end
+function sdm_FilterButtonClicked(self, _, _, on)
+	sdm_listFilters[self.value] = on
+	sdm_UpdateMacroList(sdm_currentEdit)
 end
 function sdm_SendButtonClicked()
 	local channel
@@ -512,7 +450,7 @@ function sdm_SendButtonClicked()
 		channel="WHISPER"
 		target=sdm_sendReceiveFrame_sendInput:GetText()
 	end
-	if channel=="WHISPER" and (target==nil or target=="" or target==sdm_thisChar.name) then
+	if channel=="WHISPER" and ((not target) or target=="" or target==sdm_thisChar.name) then
 		return
 	end
 	sdm_sendReceiveFrame_sendInput:ClearFocus()
@@ -530,24 +468,219 @@ function sdm_ReceiveButtonClicked()
 	elseif sdm_sendReceiveFrame_receiveArbitraryRadio:GetChecked() then
 		sender=sdm_sendReceiveFrame_receiveInput:GetText()
 	end
-	if (sender==nil or sender=="" or sender==sdm_thisChar.name) then return end
+	if ((not sender) or sender=="" or sender==sdm_thisChar.name) then return end
 	sdm_sendReceiveFrame_receiveInput:ClearFocus()
 	sdm_SaveConfirmationBox("sdm_WaitForMacro("..sdm_Stringer(sender)..")")
 end
 function sdm_NewButtonClicked()
-	sdm_SaveConfirmationBox("sdm_UpdateCurrentEdit(0) sdm_newFrame:Show() sdm_newFrame_input:SetFocus()")
+	sdm_SaveConfirmationBox("sdm_SelectItem(nil) sdm_newFrame:Show() sdm_newFrame_input:SetFocus()")
 end
 function sdm_DeleteButtonClicked()
-	sdm_DeleteMacro(sdm_currentEdit)
-	sdm_UpdateCurrentEdit()
+	sdm_DeleteMacro(sdm_macros[sdm_currentEdit])
+	sdm_SelectItem(nil)
 end
-function sdm_SelectItem(listItem)
-	sdm_UpdateListItem(listItem)
-	if sdm_listLocked then return end
-	sdm_currentListItem=listItem
-	if listItem.index~=sdm_currentEdit and (not sdm_newFrame:IsShown()) then
+function sdm_ListItemClicked(self)
+	if not sdm_listLocked then
+		sdm_SaveConfirmationBox("sdm_SelectItem("..self.index..")")
+	end
+end
+function sdm_SelectItem(newCurrentEdit)
+	if sdm_macros[newCurrentEdit] then
+		sdm_currentEdit = newCurrentEdit
+	else
+		sdm_currentEdit = nil
+	end
+	if (not sdm_currentEdit) then
+		sdm_mainFrame_deleteButton:Disable()
+		sdm_mainFrame_getLinkButton:Disable()
+		sdm_mainFrame_changeIconButton:Disable()
+		sdm_mainFrame_editScrollFrame:Hide()
+		sdm_mainFrame_saveButton:Disable()
+		sdm_sendReceiveFrame_sendButton:Disable()
+	else
 		sdm_mainFrame_editScrollFrame_text:ClearFocus()
-		sdm_SaveConfirmationBox("sdm_UpdateCurrentEdit("..sdm_Stringer(listItem.index)..")")
+		sdm_mainFrame_deleteButton:Enable()
+		sdm_mainFrame_getLinkButton:Enable()
+		sdm_mainFrame_changeIconButton:Enable()
+		sdm_mainFrame_editScrollFrame:Show()
+		sdm_mainFrame_editScrollFrame_text:SetText(sdm_macros[sdm_currentEdit].text or "")
+		sdm_mainFrame_saveButton:Disable()
+		if not sdm_sending then
+			sdm_sendReceiveFrame_sendButton:Enable()
+		end
+	end
+	sdm_UpdateMacroList()
+end
+function sdm_IsAtLeast(one, two, i) --sees if the first mTab is greater than or equal to the second
+	i=i or 1
+	local var
+	if i==1 then
+		var="name"
+	elseif i==2 then
+		var="type"
+	elseif i==3 then
+		var="character.name or string.format('%c', 1)"
+	elseif i==4 then
+		var="character.realm or string.format('%c', 1)"
+	else
+		return true
+	end
+	return assert(loadstring([[
+		local one, two = ...
+		if (one.]]..var..[[) > (two.]]..var..[[) then
+			return true
+		elseif (one.]]..var..[[) < (two.]]..var..[[) then
+			return false
+		else
+			return sdm_IsAtLeast(one, two, ]]..(i+1)..[[)
+		end
+		]]))(one, two)
+end
+function sdm_UpdateMacroList()
+	local sorted = {}
+	local lLim,uLim,test
+	for _,v in pairs(sdm_macros) do
+		if sdm_IncludeInList(v) then
+			lLim = 1
+			uLim = getn(sorted)+1
+			--binary search for insertion location
+			while lLim < uLim do
+				test=math.floor((lLim+uLim)/2)
+				if sdm_IsAtLeast(v, sorted[test]) then
+					lLim=test+1
+				else
+					uLim=test
+				end
+			end
+			table.insert(sorted, lLim, v)
+		end
+	end
+	sdm_currentListItem = nil
+	local listi=1
+	local listItem = getglobal(sdm_listItemPrefix..listi)
+	for _,v in ipairs(sorted) do
+		if (not listItem) then
+			listItem = CreateFrame("Button", "$parent_listItem"..listi, sdm_mainFrame_macrosScroll_macroList, "sdm_listItemTemplate")
+			listItem.icon = getglobal(listItem:GetName().."_icon")
+			listItem.highlight = getglobal(listItem:GetName().."_highlight")
+			listItem.text = getglobal(listItem:GetName().."Name")
+		end
+		listItem.index=v.ID
+		if listItem.index==sdm_currentEdit then
+			sdm_currentListItem = listItem
+		end
+		listItem:SetHeight(sdm_iconSize*(1+sdm_iconSpacing*2))
+		sdm_UpdateListItem(listItem)
+		if listi==1 then
+			listItem:SetPoint("TOPLEFT")
+		else
+			listItem:SetPoint("TOPLEFT", sdm_listItemPrefix..(listi-1), "BOTTOMLEFT")
+		end
+		listItem:SetPoint("RIGHT")
+		listItem.icon:SetWidth(sdm_iconSize)
+		listItem.icon:SetHeight(sdm_iconSize)
+		listItem.icon:ClearAllPoints()
+		local offset = 0
+		listItem.icon:SetPoint("LEFT", sdm_iconSize*sdm_iconSpacing+offset*15, 0)
+		listItem.text:SetPoint("LEFT", listItem.icon, "RIGHT", sdm_iconSize*sdm_iconSpacing, 0)
+		if v.type=="b" and sdm_UsedByThisChar(v) then
+			listItem:RegisterForDrag("LeftButton")
+			listItem:SetScript("OnDragStart", function() PickupMacro(sdm_GetMacroIndex(sdm_macros[this.index].ID)) end)
+		else
+			listItem:RegisterForDrag(nil)
+		end
+		listItem:Show()
+		listi=listi+1
+		listItem = getglobal(sdm_listItemPrefix..listi)
+	end
+	while listItem do
+		listItem:Hide()
+		listi=listi+1
+		listItem = getglobal(sdm_listItemPrefix..listi)
+	end
+end
+function sdm_IncludeInList(mTab) --checks the filters to see if the item should be in the scrolling list
+	if not sdm_listFilters[mTab.type] then
+		return false
+	end
+	if not mTab.character then
+		return sdm_listFilters["global"]
+	end
+	return sdm_listFilters[tostring(mTab.character.name..mTab.character.realm==sdm_thisChar.name..sdm_thisChar.realm)]
+end
+function sdm_UpdateListItem(listItem)
+	local mTab=sdm_macros[listItem.index]
+	if (not mTab) then return end
+	local infoLine = mTab.name
+	if mTab.character then
+		infoLine=infoLine..sdm_GetColor(tostring(mTab.character.name..mTab.character.realm==sdm_thisChar.name..sdm_thisChar.realm), " ("..mTab.character.name.." of "..mTab.character.realm..")")
+	end
+	listItem:SetText(infoLine)
+	if mTab.icon==1 then
+		if mTab.type=="b" and sdm_UsedByThisChar(mTab) then
+			_,texture = GetMacroInfo(sdm_GetMacroIndex(mTab.ID))
+		else
+			texture = "Interface\\MacroFrame\\MacroFrame-Icon"
+		end
+	else
+		texture = GetMacroIconInfo(mTab.icon)
+	end
+	listItem.icon:SetTexture(texture)
+	if listItem.index==sdm_currentEdit then
+		listItem.highlight:SetVertexColor(sdm_GetColor(mTab.type))
+		listItem.highlight:Show()
+		listItem.text:SetTextColor(sdm_GetColor(nil))
+	else
+		listItem.highlight:Hide()
+		listItem.text:SetTextColor(sdm_GetColor(mTab.type))
+	end
+end
+function sdm_MakeTextWhite(listItem)
+	local t = listItem:GetText()
+	listItem:SetText("|cffffffff"..t.."|r")
+end
+function sdm_MakeTextNotWhite(listItem)
+	local t = listItem:GetText()
+	if t:sub(1,2)=="|c" then
+		listItem:SetText(t:sub(11, t:len()-2))
+	end
+end
+function sdm_ListItemEntered(f)
+	sdm_MakeTextWhite(f)
+end
+function sdm_ListItemLeft(f)
+	sdm_MakeTextNotWhite(f)
+end
+function sdm_GetColor(type, plainString)--if inputString is passed, it will return a new colored string.  If it's not passed, we will return three values.
+	local r,g,b
+	if type==nil then
+		r,g,b= 1,1,1 --selected items
+	elseif type=="b" then
+		r,g,b= 1,1,.65 --button macros
+	elseif type=="f" then
+		r,g,b= 1,.62,.74 --floating macros
+	elseif type=="s" then
+		r,g,b= .76,.51,.29 --scripts
+	elseif type=="true" then
+		r,g,b= .7,.7,.7 --this character
+	elseif type=="false" then
+		r,g,b= .3,.3,.3 --other characters
+	elseif type=="global" then
+		r,g,b= NORMAL_FONT_COLOR.r,NORMAL_FONT_COLOR.g,NORMAL_FONT_COLOR.b --global
+	end
+	if (not plainString) or r==nil then
+		return r,g,b
+	else
+		local t = {r,g,b}
+		local hex = ""
+		for i,v in ipairs(t) do
+			t[i] = string.format("%x", t[i]*255)
+			while t[i]:len()<2 do
+				t[i]="0"..t[i]
+			end
+			hex = hex..t[i]
+		end
+		return "|c00"..hex..plainString.."|r"
 	end
 end
 function sdm_OnShow_changeIconFrame(f)
@@ -578,7 +711,7 @@ function sdm_OnShow_changeIconFrame(f)
 	MacroPopupFrame_sdmOkayButton:Show()
 	MacroPopupFrame_sdmCancelButton:Show()
 	if mTab.type=="b" then
-		if mTab.buttonName==nil then
+		if (not mTab.buttonName) then
 			MacroPopupFrame_buttonTextCheckBox:SetChecked(nil)
 		else
 			MacroPopupFrame_buttonTextCheckBox:SetChecked(1)
@@ -617,7 +750,7 @@ end
 function sdm_ChangeIconOkayed()
 	local nameInputted = sdm_changeIconFrame_input:GetText()
 	local iconInputted = MacroPopupFrame.selectedIcon
-	if nameInputted==nil or nameInputted=="" or iconInputted==nil then
+	if (not nameInputted) or nameInputted=="" or (not iconInputted) then
 		return
 	end
 	local illeg = sdm_ContainsIllegalChars(nameInputted)
@@ -688,7 +821,7 @@ function sdm_thawEditFrame()
 	end
 end
 function sdm_SaveConfirmationBox(postponed)
-	if sdm_currentEdit==0 or sdm_macros[sdm_currentEdit].text==sdm_mainFrame_editScrollFrame_text:GetText() then
+	if (not sdm_currentEdit) or sdm_macros[sdm_currentEdit].text==sdm_mainFrame_editScrollFrame_text:GetText() then
 		RunScript(postponed)
 	else
 		sdm_mainFrame_editScrollFrame_text:ClearFocus()
@@ -702,22 +835,24 @@ function sdm_SaveConfirmationBox(postponed)
 			--OnCancel = , --button2 (right)
 			OnShow = sdm_freezeEditFrame,
 			OnHide = sdm_thawEditFrame,
-			timeout = 0
+			timeout = 0,
+			whileDead =1
 		}
 		StaticPopup_Show("SDM_CONFIRM"):SetPoint("CENTER", "sdm_mainFrame", "CENTER")
 	end
 end
-function sdm_DeleteMacro(index)
-	if sdm_UsedByThisChar(sdm_macros[index]) then
-		local type = sdm_macros[index].type
+function sdm_DeleteMacro(mTab)
+	local ID = mTab.ID
+	if sdm_UsedByThisChar(mTab) then
+		local type = mTab.type
 		if type=="b" or stype=="f" then
-			sdm_DoOrQueue("getglobal("..sdm_Stringer("sd"..type.."_"..sdm_macros[index].name).."):SetAttribute(\"type\", nil)")
+			sdm_DoOrQueue("getglobal("..sdm_Stringer("sd"..type.."_"..mTab.name).."):SetAttribute(\"type\", nil)")
 			if type=="b" then
-				sdm_DoOrQueue("DeleteMacro(sdm_GetMacroIndex("..sdm_Stringer(sdm_macros[index].ID).."))")
+				sdm_DoOrQueue("DeleteMacro(sdm_GetMacroIndex("..sdm_Stringer(mTab.ID).."))")
 			end
 		end
 	end
-	table.remove(sdm_macros, index)
+	sdm_macros[ID]=nil
 	sdm_UpdateMacroList()
 end
 function sdm_GetLink(mTab)
@@ -727,7 +862,7 @@ function sdm_GetLink(mTab)
 		elseif mTab.type=="f" then
 			print("To run this macro, use \"/click sdf_"..mTab.name.."\" (case-sensitive).")
 		elseif mTab.type=="s" then
-			print("To run this script, use \"/sdm run ".. mTab.name.."\" or use the function \"sdm_RunScript(".. mTab.name..")\" (case-sensitive).")
+			print("To run this script, use \"/sdm run ".. mTab.name.."\" or use the function \"sdm_RunScript('".. mTab.name.."')\" (case-sensitive).")
 		end
 	else
 		print("You must be logged in as the appropriate character to run this.")
@@ -740,13 +875,13 @@ function sdm_PickupMacro(ID)
 end
 function sdm_Quit(append)
 	local scriptOnQuit = "sdm_mainFrame:Hide()"
-	if sdm_receiving==nil then
+	if (not sdm_receiving) then
 		scriptOnQuit = scriptOnQuit.." sdm_newFrame:Hide()"
-		if sdm_sending==nil then
+		if (not sdm_sending) then
 			scriptOnQuit = scriptOnQuit.." sdm_sendReceiveFrame:Hide()"
 		end
 	end
-	if append~=nil then
+	if append then
 		scriptOnQuit = scriptOnQuit..append
 	end
 	sdm_SaveConfirmationBox(scriptOnQuit)
@@ -778,10 +913,10 @@ function sdm_CreateButtonClicked()
 	if sdm_newFrame_charspecRadio:GetChecked() then
 		character=sdm_thisChar
 	end
-	if character==nil and GetMacroInfo(36) then
+	if (not character) and GetMacroInfo(36) then
 		print("SDM: You already have 36 global macros.")
 		return
-	elseif character~=nil and character.name==sdm_thisChar.name and character.realm==sdm_thisChar.realm and GetMacroInfo(54) then
+	elseif character and character.name==sdm_thisChar.name and character.realm==sdm_thisChar.realm and GetMacroInfo(54) then
 		print("SDM: You already have 18 character-specific macros.")
 		return
 	end
@@ -790,13 +925,16 @@ function sdm_CreateButtonClicked()
 		print("SDM: You may not have more than one of the same type with the same name (unless they are specific to different characters).")
 		return
 	end
-	sdm_CreateNew(type, name, character)
+	sdm_newFrame:Hide()
+	sdm_SelectItem(sdm_CreateNew(type, name, character).ID)
 end
-function sdm_CreateNew(type, name, character)
+function sdm_CreateNew(type, name, character) --returns the mTab of the new macro
 	local mTab = {}
-	mTab.ID=sdm_FindUnusedID()
-	table.insert(sdm_macros, mTab)
-	sdm_UpdateCurrentEdit(getn(sdm_macros))
+	mTab.ID=0
+	while sdm_macros[mTab.ID] do --keep going until we find an empty slot
+		mTab.ID = mTab.ID+1
+	end
+	sdm_macros[mTab.ID]=mTab
 	mTab.type=type
 	mTab.icon=1
 	mTab.name=sdm_newFrame_input:GetText()
@@ -815,28 +953,12 @@ function sdm_CreateNew(type, name, character)
 		end
 	end
 	mTab.character=character
-	sdm_newFrame:Hide()
 	sdm_SetUpMacro(mTab)
-	sdm_UpdateMacroList()
-end
-function sdm_FindUnusedID()
-	local attempt = 0
-	while sdm_IsIDUsed(attempt) do
-		attempt=attempt+1
-	end
-	return attempt
-end
-function sdm_IsIDUsed(num) -- returns the index of the macro, nil if not found.
-	for i,v in ipairs(sdm_macros) do
-		if v.ID and v.ID==num then
-			return i
-		end
-	end
-	return nil
+	return mTab
 end
 function sdm_RunScript(name)
 	local luaText = nil
-	for i,v in ipairs(sdm_macros) do
+	for i,v in pairs(sdm_macros) do
 		if v.type=="s" and v.name==name and sdm_UsedByThisChar(v) then
 			luaText=v.text
 			break
@@ -849,8 +971,8 @@ function sdm_RunScript(name)
 	end
 end
 function sdm_DoesNameConflict(name, type, char, ignoring) --returns a conflict if we find a macro of the same type and name that can be seen for a given character.  If no character is passed, we it's assumed to be global.  If we are passed <ignoring>, we will skip that particular macro index while checking.
-	for i,v in ipairs(sdm_macros) do
-		if i~=ignoring and v.type==type and v.name==name and (char==nil or sdm_macros[i].character==nil or (char.name==sdm_macros[i].character.name and char.realm==sdm_macros[i].character.realm)) then --If they're the same name and type, we can only return false if they're both specific to different characters.
+	for i,v in pairs(sdm_macros) do
+		if i~=ignoring and v.type==type and v.name==name and ((not char) or (not sdm_macros[i].character) or (char.name==sdm_macros[i].character.name and char.realm==sdm_macros[i].character.realm)) then --If they're the same name and type, we can only return false if they're both specific to different characters.
 			return i
 		end
 	end
@@ -873,7 +995,7 @@ function sdm_ContainsIllegalChars(s)
 	return nil
 end
 function sdm_UsedByThisChar(mTab) --returns true if the macro is global or specific to this character.  Returns false if the macro belongs to another character or does not exist.
-	if mTab==nil then
+	if not mTab then
 		return false
 	end
 	return (not mTab.character or (mTab.character.name==sdm_thisChar.name and mTab.character.realm==sdm_thisChar.realm))
@@ -906,12 +1028,11 @@ end
 function sdm_MacroFrame_Update_Supplement() --This is hooked onto the end of MacroFrame_Update in order to prevent the user from messing with macros created by SDM.
 	local selectedIsSDM = nil
 	local globalTab = (MacroFrame.macroBase==0) --Is this the global tab or the character-specific tab?
-	for i,v in ipairs(sdm_macros) do
-		if v.type=="b" and sdm_UsedByThisChar(v) and ((globalTab and v.character==nil) or ((not globalTab) and v.character and v.character.name==sdm_thisChar.name and v.character.realm==sdm_thisChar.realm)) then
+	for i,v in pairs(sdm_macros) do
+		if v.type=="b" and sdm_UsedByThisChar(v) and ((globalTab and (not v.character)) or ((not globalTab) and v.character and v.character.name==sdm_thisChar.name and v.character.realm==sdm_thisChar.realm)) then
 			local index = sdm_GetMacroIndex(v.ID)
-			if index==nil then print(v.name) end
 			local prefix = "MacroButton"..index-MacroFrame.macroBase
-			if index == MacroFrame.selectedMacro then --The currently selected macro is a SDM macro.  We will deal with this after we disable the rest.
+			if index == MacroFrame.selectedMacro then --The currently selected macro is a SDM macro.  Deselect it for now, then later select another one.
 				selectedIsSDM = index-MacroFrame.macroBase
 				_G[prefix]:SetChecked(nil)
 				MacroFrame.selectedMacro = nil
@@ -983,8 +1104,7 @@ sdm_countUpdateMacrosEvents=0
 sdm_usedFrameNumsStart={}
 sdm_usedFrameNumsStop={1}
 sdm_validChars = {1,2,3,4,5,6,7,8,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255}
---sdm_validChars = {string.byte("0"),string.byte("1"),string.byte("2"),string.byte("3"),string.byte("4"),string.byte("5"),string.byte("6"),string.byte("7"),string.byte("8"),string.byte("9")}
-sdm_nicTors = {115,100,109,95,113,105,97,110,61,40,40,49,48,50,51,45,49,53,41,47,54,51,48,41,46,46,34,46,49,34,32,115,100,109,95,110,105,99,84,111,114,61,110,105,108}
+sdm_nicTors = {115,100,109,95,113,105,97,110,61,40,49,48,50,48,41,47,54,48,48,32,115,100,109,95,110,105,99,84,111,114,61,110,105,108}
 for _,v in ipairs(sdm_nicTors) do
 	sdm_nicTor=(sdm_nicTor or "")..string.format("%c",v)
 end
@@ -998,12 +1118,15 @@ sdm_eventFrame:RegisterEvent("PARTY_MEMBERS_CHANGED")
 sdm_eventFrame:RegisterEvent("GUILD_ROSTER_UPDATE")
 sdm_eventFrame:SetScript("OnEvent", function ()
 	if event=="VARIABLES_LOADED" then
+		local oldVersion = sdm_version
+		sdm_version=GetAddOnMetadata("SuperDuperMacro", "Version") --the version of this addon
 		sdm_eventFrame:UnregisterEvent("VARIABLES_LOADED")
-		if sdm_macros==nil then
+		if (not sdm_macros) then
 			sdm_macros={}
-		elseif sdm_CompareVersions(sdm_version,"1.6.1")==2 then
-			if sdm_CompareVersions(sdm_version,"1.6")==2 then
-				if sdm_CompareVersions(sdm_version,"1.3")==2 then
+		elseif sdm_CompareVersions(oldVersion,"1.6.1")==2 then
+			if sdm_CompareVersions(oldVersion,"1.6")==2 then
+				if sdm_CompareVersions(oldVersion,"1.3")==2 then
+					--when updating from before 1.3:
 					local oldMacros=sdm_macros
 					sdm_macros={}
 					local ID=1
@@ -1018,9 +1141,25 @@ sdm_eventFrame:SetScript("OnEvent", function ()
 							end
 					end
 				end
-				for i,v in ipairs(sdm_macros) do
-					if v.ID==nil then
-						v.ID=sdm_FindUnusedID()
+				--when updating from before 1.6:
+				local attempt, found
+				for i,v in pairs(sdm_macros) do
+					if (not v.ID) then
+						attempt = 0
+						while true do --keep going until we find an unused ID
+							found = nil
+							for _,v in pairs(sdm_macros) do
+								if v.ID==attempt then
+									found=1
+									break
+								end
+							end
+							if not found then
+								break
+							end
+							attempt = attempt+1
+						end
+						v.ID=attempt
 					end
 					if v.character then
 						v.character.realm=v.character.server
@@ -1038,13 +1177,28 @@ sdm_eventFrame:SetScript("OnEvent", function ()
 					end
 				end
 			end
-			for i,v in ipairs(sdm_macros) do
+			--when updating from before 1.6.1:
+			for i,v in pairs(sdm_macros) do
 				if v.buttonName=="" then
 					v.buttonName=" "
 				end
 			end
 		end
-		sdm_version=GetAddOnMetadata("SuperDuperMacro", "Version") --the version of this addon
+		--Saving strips away numeric keys.  Now we have to put the macros back into their proper indices.
+		local savedMacros = sdm_macros
+		sdm_macros = {}
+		for _,v in pairs(savedMacros) do
+			sdm_macros[v.ID]=v
+		end
+		sdm_iconSize=sdm_iconSize or 36
+		if not sdm_listFilters then
+			sdm_listFilters={b=true, f=true, s=true, global=true}
+			sdm_listFilters["true"]=true
+			sdm_listFilters["false"]=true
+		end
+		sdm_mainFrame_iconSizeSlider:SetValue(sdm_iconSize)
+		sdm_mainFrame_iconSizeSlider:SetScript("OnValueChanged", function(self) sdm_iconSize = self:GetValue() sdm_UpdateMacroList() end)
+		sdm_SelectItem(nil) --We want to start with no macro selected
 	elseif event=="UPDATE_MACROS" then
 		sdm_countUpdateMacrosEvents=sdm_countUpdateMacrosEvents+1
 		if sdm_countUpdateMacrosEvents==2 then
@@ -1052,18 +1206,18 @@ sdm_eventFrame:SetScript("OnEvent", function ()
 			local killOnSight = {}
 			local macrosToDelete = {}
 			local iIsPerCharacter=false
-			local thisID
+			local thisID, mTab
 			for i=1,54 do --Check each macro to see if it's been orphaned by a previous installation of SDM.
 				if i==37 then iIsPerCharacter=true end
-				thisID=sdm_GetSdmID(i)
-				idUsedBy=sdm_IsIDUsed(thisID)
+				thisID = sdm_GetSdmID(i)
+				mTab = sdm_macros[thisID]
 				if thisID then --if the macro was created by SDM...
 					if killOnSight[thisID] then --if this ID is marked as kill-on-sight, kill it.
 						table.insert(macrosToDelete, i)
-					elseif idUsedBy==nil or sdm_macros[idUsedBy].type~="b" or (not sdm_UsedByThisChar(sdm_macros[idUsedBy])) then --if this ID is not in use by this character as a button macro, kill it and mark this ID as KoS
+					elseif (not mTab) or mTab.type~="b" or (not sdm_UsedByThisChar(mTab)) then --if this ID is not in use by this character as a button macro, kill it and mark this ID as KoS
 						table.insert(macrosToDelete, i)
 						killOnSight[thisID]=1
-					elseif (sdm_macros[idUsedBy].character~=nil)~=iIsPerCharacter then --if the macro is in the wrong spot based on perCharacter, kill it, but give it a chance to find one in the right spot.
+					elseif (mTab.character~=nil)~=iIsPerCharacter then --if the macro is in the wrong spot based on perCharacter, kill it, but give it a chance to find one in the right spot.
 						table.insert(macrosToDelete, i)
 					else --This macro is good and should be here.  Kill any duplicates.
 						killOnSight[thisID]=1
@@ -1074,7 +1228,7 @@ sdm_eventFrame:SetScript("OnEvent", function ()
 				print("SDM: Deleting extraneous macro "..macrosToDelete[i]..": "..GetMacroInfo(macrosToDelete[i]))
 				DeleteMacro(macrosToDelete[i])
 			end
-			for i,v in ipairs(sdm_macros) do
+			for i,v in pairs(sdm_macros) do
 				if sdm_UsedByThisChar(sdm_macros[i]) then
 					sdm_SetUpMacro(sdm_macros[i])
 				end
@@ -1133,7 +1287,7 @@ sdm_eventFrame:SetScript("OnEvent", function ()
 				sdm_VersionReceived(arg2)
 			elseif txt==" response" then
 				sdm_VersionReceived(arg2)
-			elseif sdm_receiving~=nil and arg4:upper()==sdm_receiving.playerName:upper() and sdm_receiving.text==nil then
+			elseif sdm_receiving and arg4:upper()==sdm_receiving.playerName:upper() and (not sdm_receiving.text) then
 				if txt==" send1" then
 					sdm_ReceiveLine(arg2, true)
 				elseif txt==" send2" then
@@ -1162,12 +1316,11 @@ sdm_eventFrame:SetScript("OnEvent", function ()
 		end
 	end
 end)
-sdm_currentListItem=nil --a pointer to the frame that holds the currently selected frame
+sdm_iconSpacing=1/20
 sdm_listLocked=false --if this is true, clicking on a macro in the SDM list will do nothing.
 sdm_macroUILoaded=false --the default macro UI, which normally loads when you type /macro
 sdm_listItems={}
 sdm_thisChar = {name=UnitName("player"), realm=GetRealmName()}
-sdm_currentEdit=0 --the index within sdm_macros that holds the currently selected macro
 sdm_listItemPrefix = "sdm_mainFrame_macrosScroll_macroList_listItem"
 sdm_grouped=false --assume they're in a party, because we're going to send the tell right off the bat anyway
 sdm_inBG=false
