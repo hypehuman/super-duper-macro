@@ -1,36 +1,4 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/">
-	<Button name="sdm_listItemTemplate" virtual="true">
-		<Layers>
-			<Layer level="ARTWORK">
-				<Texture name="$parent_icon">
-				</Texture>
-				<Texture name="$parent_highlight" file="Interface\QuestFrame\UI-QuestLogTitleHighlight" alphaMode="ADD" hidden="true">
-					<Anchors>
-						<Anchor point="TOPLEFT"/>
-						<Anchor point="BOTTOMRIGHT"/>
-					</Anchors>
-				</Texture>
-			</Layer>
-		</Layers>
-		<ButtonText name="$parentName" inherits="GameFontNormal" justifyH="left" nonSpaceWrap="true">
-			<Anchors>
-				<Anchor point="TOP"/>
-				<Anchor point="BOTTOMRIGHT"/>
-			</Anchors>
-		</ButtonText>
-		<Scripts>
-			<OnClick>
-				sdm_ListItemClicked(self)
-			</OnClick>
-			<OnEnter>
-				if sdm_listLocked then return end
-				sdm_ListItemEntered(self)
-			</OnEnter>
-			<OnLeave>
-				sdm_ListItemLeft(self)
-			</OnLeave>
-		</Scripts>
-	</Button>
 	<Frame name="sdm_updateFrame" parent="UIParent" hidden="true">
 		<Scripts>
 			<OnShow>
@@ -110,15 +78,6 @@
 					</Anchors>
 				</FontString>
 			</Layer>
-			<Layer level="OVERLAY">
-				<FontString name="$parentVersionWarning" inherits="GameFontNormal" text="">
-					<Anchors>
-						<Anchor point="TOP">
-							<Offset x="0" y="-47" />
-						</Anchor>
-					</Anchors>
-				</FontString>
-			</Layer>
 		</Layers>
 		<Frames>
 			<Button name="$parent_newButton" inherits="UIPanelButtonTemplate" text="New">
@@ -132,6 +91,9 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>sdm_NewButtonClicked()</OnClick>
+					<OnLoad>
+						sdm_AddToExclusiveGroup(self, "centerwindows", true)
+					</OnLoad>
 				</Scripts>
 			</Button>
 			<Button name="$parent_sendReceiveButton" inherits="UIPanelButtonTemplate" text="Send/Receive">
@@ -185,9 +147,9 @@
 					</Anchor>
 				</Anchors>
 				<Scripts>
-					<OnLoad>
+					<OnShow>
 						sdm_CharDropdownLoaded(self);
-					</OnLoad>
+					</OnShow>
 				</Scripts>
 			</Frame>
 			<Frame name="$parent_typeFilterDropdown" inherits="UIDropDownMenuTemplate" enableMouse="true">
@@ -212,11 +174,54 @@
 					</Layer>
 				</Layers>
 				<Scripts>
-					<OnLoad>
+					<OnShow>
 						sdm_TypeDropdownLoaded(self);
-					</OnLoad>
+					</OnShow>
 				</Scripts>
 			</Frame>
+			<CheckButton name="$parent_collapseAllButton" hidden="false">
+				<Size>
+					<AbsDimension x="40" y="16"/>
+				</Size>
+				<Anchors>
+					<Anchor point="BOTTOMLEFT" relativeTo="$parent_macrosScroll" relativePoint="TOPLEFT">
+						<Offset>
+							<AbsDimension x="0" y="11"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<NormalFont style="GameFontNormal"/>
+				<HighlightFont style="GameFontHighlight"/>
+				<ButtonText name="$parent_text" text="All">
+					<Anchors>
+						<Anchor point="LEFT">
+							<Offset>
+								<AbsDimension x="20" y="0"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</ButtonText>
+				<NormalTexture file="Interface\Buttons\UI-MinusButton-UP">
+					<Anchors>
+						<Anchor point="LEFT"/>
+					</Anchors>
+				</NormalTexture>
+				<CheckedTexture file="Interface\Buttons\UI-PlusButton-UP">
+					<Anchors>
+						<Anchor point="LEFT"/>
+					</Anchors>
+				</CheckedTexture>
+				<HighlightTexture file="Interface\Buttons\UI-PlusButton-Hilight" alphaMode="ADD">
+					<Anchors>
+						<Anchor point="LEFT"/>
+					</Anchors>
+				</HighlightTexture>
+				<Scripts>
+					<OnClick>
+						sdm_CollapseAllButtonClicked(self)
+					</OnClick>
+				</Scripts>
+			</CheckButton>
 			<Button name="$parent_quitButton" inherits="UIPanelCloseButton">
 				<Anchors>
 					<Anchor point="TOPRIGHT">
@@ -239,7 +244,7 @@
 				<Scripts>
 					<OnClick>
 						sdm_Edit(sdm_macros[sdm_currentEdit], sdm_mainFrame_editScrollFrame_text:GetText())
-						sdm_UpdateListItem(sdm_currentListItem)
+						sdm_UpdateList()
 					</OnClick>
 				</Scripts>
 			</Button>
@@ -272,15 +277,35 @@
 					<OnClick>
 						sdm_changeIconFrame:Show()
 					</OnClick>
+					<OnLoad>
+						sdm_AddToExclusiveGroup(self, "centerwindows", true)
+					</OnLoad>
 				</Scripts>
 			</Button>
-			<Slider name="$parent_iconSizeSlider" orientation="HORIZONTAL" enableMouse="true" minValue="13" maxValue="64" defaultValue="36">
+			<Button name="$parent_newFolderButton" inherits="UIPanelButtonTemplate" text="New Folder">
+				<Size x="100" y="22" />
+				<Anchors>
+					<Anchor point="RIGHT" relativeTo="$parent_getLinkButton" relativePoint="LEFT">
+						<Offset x="-304"/>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						sdm_newFolderFrame:Show()
+						sdm_newFolderFrame_input:SetFocus()
+					</OnClick>
+					<OnLoad>
+						sdm_AddToExclusiveGroup(self, "centerwindows", true)
+					</OnLoad>
+				</Scripts>
+			</Button>
+			<Slider name="$parent_iconSizeSlider" orientation="HORIZONTAL" enableMouse="true" minValue="11" maxValue="64" defaultValue="36">
 				<Size>
 					<AbsDimension x="144" y="17"/>
 				</Size>
 				<Anchors>
 					<Anchor point="BOTTOMLEFT">
-						<Offset x="25" y="16" />
+						<Offset x="25" y="16.5" />
 					</Anchor>
 				</Anchors>
 				<HitRectInsets>
@@ -386,6 +411,29 @@
 						self:SetBackdropColor(TOOLTIP_DEFAULT_BACKGROUND_COLOR.r, TOOLTIP_DEFAULT_BACKGROUND_COLOR.g, TOOLTIP_DEFAULT_BACKGROUND_COLOR.b)
 					</OnLoad>
 				</Scripts>
+				<Layers>
+					<Layer level="OVERLAY">
+						<FontString name="sdm_currentTitle" inherits="GameFontNormal" text="Super Duper Macro">
+							<Anchors>
+								<Anchor point="TOP">
+									<Offset x="0" y="20" />
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+					<Layer level="OVERLAY">
+						<FontString name="sdm_containerInstructions" inherits="GameFontNormal" text="sdm_containerInstructionsString">
+							<Anchors>
+								<Anchor point="BOTTOMLEFT">
+									<Offset x="10" y="10" />
+								</Anchor>
+								<Anchor point="TOPRIGHT">
+									<Offset x="-10" y="-10" />
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
 			</Frame>
 		</Frames>
 		<Scripts>
@@ -395,6 +443,8 @@
 			<OnShow>
 				PlaySound "igCharacterInfoOpen"
 				self:SetPoint("TOPLEFT", "UIParent", "TOPLEFT", 0, -104)
+				sdm_currentlyPlacing=nil
+				sdm_UpdateList()
 			</OnShow>
 			<OnHide>
 				PlaySound "igCharacterInfoClose"
@@ -643,13 +693,117 @@
 			<OnMouseDown> sdm_mainFrame:StartMoving();  </OnMouseDown>
 			<OnMouseUp>  sdm_mainFrame:StopMovingOrSizing(); </OnMouseUp>
 			<OnDragStop> sdm_mainFrame:StopMovingOrSizing(); </OnDragStop>
-			<OnShow>
-				sdm_listLocked = true
-			</OnShow>
+			<OnLoad>
+				sdm_AddToExclusiveGroup(self, "centerwindows")
+			</OnLoad>
 			<OnHide>
-				sdm_listLocked = false
 				UIFrameFlashStop(sdm_newFrame_createButton_flash)
 			</OnHide>
+		</Scripts>
+	</Frame>
+	<Frame name="sdm_newFolderFrame" hidden="true" inherits="UIParent" parent="sdm_mainFrame" toplevel="true">
+		<Size>
+			<AbsDimension x="280" y="125"/>
+		</Size>
+		<Anchors>
+			<Anchor point="CENTER">
+				<Offset x="70" y="0" />
+			</Anchor>
+		</Anchors>
+		<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+			<TileSize>
+				<AbsValue val="32"/>
+			</TileSize>
+			<EdgeSize>
+				<AbsValue val="32"/>
+			</EdgeSize>
+			<BackgroundInsets>
+				<AbsInset left="11" right="12" top="12" bottom="11"/>
+			</BackgroundInsets>
+		</Backdrop>
+		<Layers>
+			<Layer level="OVERLAY">
+				<FontString name="$parent_explanationText" inherits="GameFontNormal" text="Alt-click on a folder in the list for options and instructions.">
+					<Size>
+						<AbsDimension y="48"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset>
+								<AbsDimension x="15" y="-15"/>
+							</Offset>
+						</Anchor>
+						<Anchor point="RIGHT">
+							<Offset>
+								<AbsDimension x="-15"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<EditBox name="$parent_input" inherits="InputBoxTemplate" autoFocus="false">
+				<Size>
+					<AbsDimension x="200" y="26"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_explanationText" relativePoint="BOTTOMLEFT">
+						<Offset>
+							<AbsDimension x="50" y="0"/>
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parent_Text" inherits="GameFontNormal" text="Name: ">
+							<Anchors>
+								<Anchor point="RIGHT" relativePoint="LEFT">
+									<Offset x="-5" y="0" />
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Scripts>
+					<OnEscapePressed>
+						self:ClearFocus()
+					</OnEscapePressed>
+					<OnEnterPressed>
+						sdm_newFolderFrame_createButton:Click()
+					</OnEnterPressed>
+				</Scripts>
+			</EditBox>
+			<Button name="$parent_createButton" inherits="UIPanelButtonTemplate" text="Create">
+				<Size x="80" y="22" />
+				<Anchors>
+					<Anchor point="TOPLEFT" relativeTo="$parent_input" relativePoint="BOTTOMLEFT" />
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						sdm_CreateFolderButtonClicked()
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="$parent_cancelButton" inherits="UIPanelButtonTemplate" text="Cancel">
+				<Size x="80" y="22" />
+				<Anchors>
+					<Anchor point="LEFT" relativeTo="$parent_createButton" relativePoint="RIGHT" />
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						self:GetParent():Hide()
+					</OnClick>
+				</Scripts>
+			</Button>
+		</Frames>
+		<Scripts>
+			<OnMouseDown> sdm_mainFrame:StartMoving();  </OnMouseDown>
+			<OnMouseUp>  sdm_mainFrame:StopMovingOrSizing(); </OnMouseUp>
+			<OnDragStop> sdm_mainFrame:StopMovingOrSizing(); </OnDragStop>
+			<OnLoad>
+				sdm_AddToExclusiveGroup(self, "centerwindows")
+			</OnLoad>
 		</Scripts>
 	</Frame>
 	<Frame name="sdm_changeIconFrame" hidden="true" inherits="UIParent" parent="sdm_mainFrame" toplevel="true">
@@ -706,6 +860,9 @@
 			</EditBox>
 		</Frames>
 		<Scripts>
+			<OnLoad>
+				sdm_AddToExclusiveGroup(self, "centerwindows")
+			</OnLoad>
 			<OnShow>
 				sdm_OnShow_changeIconFrame(self, sdm_macros[sdm_currentEdit])
 			</OnShow>
@@ -1100,6 +1257,9 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>sdm_ReceiveButtonClicked()</OnClick>
+					<OnLoad>
+						sdm_AddToExclusiveGroup(self, "centerwindows", true)
+					</OnLoad>
 				</Scripts>
 			</Button>
 			<Frame name="$parent_receiveBar">

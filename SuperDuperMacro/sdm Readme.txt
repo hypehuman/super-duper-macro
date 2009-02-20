@@ -1,5 +1,5 @@
 Super Duper Macro
-version 1.7
+version 1.8
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -29,6 +29,10 @@ Special thanks to:
 
 
 Change Log
+
+1.8 (2/19/08)
+¥ÊAdded the option of creating folders to organize your macros
+¥ÊNumerous minor UI improvements
 
 1.7 (2/8/09)
 ¥ÊMade the macro list better
