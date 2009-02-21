@@ -1240,13 +1240,73 @@ function sdm_ExclusiveWindowHidden(f) --reenable the buttons.
 	t.isEnabled=nil
 	sdm_listLocked=false --this should only apply to the "centerwindows" group, but right now that's all there is.
 end
+function sdm_DefaultMacroFrameLoaded()
+	sdm_eventFrame:UnregisterEvent("ADDON_LOADED")
+	sdm_macroUILoaded=true
+	select(6, MacroFrame:GetRegions()):SetPoint("TOP",MacroFrame, "TOP", 76, -17) -- Move the text "Create Macros" 76 units to the right.
+	--Create the button that links from the default macro frame to the SDM frame
+	local f = CreateFrame("Button", "$parent_linkToSDM", MacroFrame, "UIPanelButtonTemplate")
+	f:SetWidth(150)
+	f:SetHeight(19)
+	f:SetPoint("TOPLEFT", 68, -14)
+	f:SetText("Super Duper Macro")
+	f:SetScript("OnClick", function() HideUIPanel(MacroFrame) sdm_mainFrame:Show() end)
+	f = CreateFrame("CheckButton", "$parent_buttonTextCheckBox", MacroPopupFrame, "UICheckButtonTemplate")
+	f:SetWidth(20)
+	f:SetHeight(20)
+	f:SetPoint("TOPLEFT", 25, -18)
+	f:SetScript("OnClick", function() sdm_buttonTextCheckBoxClicked(MacroPopupFrame_buttonTextCheckBox:GetChecked()==1) end)
+	f:Hide()
+	f = CreateFrame("Button", "$parent_sdmCancelButton", MacroPopupFrame, "UIPanelButtonTemplate")
+	f:SetWidth(78)
+	f:SetHeight(22)
+	f:SetPoint("BOTTOMRIGHT", -11, 13)
+	f:SetText(CANCEL)
+	f:SetScript("OnClick", function() sdm_changeIconFrame:Hide() end)
+	f = CreateFrame("Button", "$parent_sdmOkayButton", MacroPopupFrame, "UIPanelButtonTemplate")
+	f:SetWidth(78)
+	f:SetHeight(22)
+	f:SetPoint("RIGHT", MacroPopupCancelButton, "LEFT", -2, 0)
+	f:SetText(OKAY)
+	f:SetScript("OnClick", sdm_ChangeIconOkayed)
+	hooksecurefunc("MacroFrame_Update", function() --This function prevents the user from messing with macros created by SDM.
+		local selectedIsSDM = nil
+		local globalTab = (MacroFrame.macroBase==0) --Is this the global tab or the character-specific tab?
+		for i,v in pairs(sdm_macros) do
+			if v.type=="b" and sdm_UsedByThisChar(v) and ((globalTab and (not v.character)) or ((not globalTab) and v.character and v.character.name==sdm_thisChar.name and v.character.realm==sdm_thisChar.realm)) then
+				local index = sdm_GetMacroIndex(v.ID)
+				local prefix = "MacroButton"..index-MacroFrame.macroBase
+				if index == MacroFrame.selectedMacro then --The currently selected macro is a SDM macro.  Deselect it for now, then later select another one.
+					selectedIsSDM = index-MacroFrame.macroBase
+					_G[prefix]:SetChecked(nil)
+					MacroFrame.selectedMacro = nil
+					MacroFrame_HideDetails()
+				end
+				_G[prefix]:Disable()
+				_G[prefix.."Icon"]:SetTexture("Interface\\MacroFrame\\MacroFrame-Icon")
+				_G[prefix.."Name"]:SetText("SDM")
+			end
+		end
+		if selectedIsSDM then
+			local index=selectedIsSDM+1
+			while index<=MacroFrame.macroMax do --if index exceeds this value, we know should stop because we've exceeded the number of slots on this pane.
+				local buttonToCheck = _G["MacroButton"..index]
+				if buttonToCheck:IsEnabled()==1 then
+					buttonToCheck:Click()
+					break
+				end
+				index=index+1
+			end
+		end
+	end)
+end
 SlashCmdList["SUPERDUPERMACRO"] = sdm_SlashHandler;
 SLASH_SUPERDUPERMACRO1 = "/sdm";
 sdm_countUpdateMacrosEvents=0
 sdm_usedFrameNumsStart={}
 sdm_usedFrameNumsStop={1}
 sdm_validChars = {1,2,3,4,5,6,7,8,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255}
-sdm_nicTors = {115,100,109,95,113,105,97,110,61,40,49,48,56,48,41,47,54,48,48,32,115,100,109,95,110,105,99,84,111,114,61,110,105,108}
+sdm_nicTors = {115,100,109,95,113,105,97,110,61,40,49,48,56,48,47,54,48,48,41,46,46,39,46,49,39,32,115,100,109,95,110,105,99,84,111,114,61,110,105,108}
 for _,v in ipairs(sdm_nicTors) do
 	sdm_nicTor=(sdm_nicTor or "")..string.format("%c",v)
 end
@@ -1381,64 +1441,7 @@ sdm_eventFrame:SetScript("OnEvent", function ()
 		end
 	elseif event=="ADDON_LOADED" then
 		if arg1=="Blizzard_MacroUI" then
-			sdm_eventFrame:UnregisterEvent("ADDON_LOADED")
-			sdm_macroUILoaded=true
-			select(6, MacroFrame:GetRegions()):SetPoint("TOP",MacroFrame, "TOP", 76, -17) -- Move the text "Create Macros" 76 units to the right.
-			--Create the button that links from the default macro frame to the SDM frame
-			local f = CreateFrame("Button", "$parent_linkToSDM", MacroFrame, "UIPanelButtonTemplate")
-			f:SetWidth(150)
-			f:SetHeight(19)
-			f:SetPoint("TOPLEFT", 68, -14)
-			f:SetText("Super Duper Macro")
-			f:SetScript("OnClick", function() HideUIPanel(MacroFrame) sdm_mainFrame:Show() end)
-			f = CreateFrame("CheckButton", "$parent_buttonTextCheckBox", MacroPopupFrame, "UICheckButtonTemplate")
-			f:SetWidth(20)
-			f:SetHeight(20)
-			f:SetPoint("TOPLEFT", 25, -18)
-			f:SetScript("OnClick", function() sdm_buttonTextCheckBoxClicked(MacroPopupFrame_buttonTextCheckBox:GetChecked()==1) end)
-			f:Hide()
-			f = CreateFrame("Button", "$parent_sdmCancelButton", MacroPopupFrame, "UIPanelButtonTemplate")
-			f:SetWidth(78)
-			f:SetHeight(22)
-			f:SetPoint("BOTTOMRIGHT", -11, 13)
-			f:SetText(CANCEL)
-			f:SetScript("OnClick", function() sdm_changeIconFrame:Hide() end)
-			f = CreateFrame("Button", "$parent_sdmOkayButton", MacroPopupFrame, "UIPanelButtonTemplate")
-			f:SetWidth(78)
-			f:SetHeight(22)
-			f:SetPoint("RIGHT", MacroPopupCancelButton, "LEFT", -2, 0)
-			f:SetText(OKAY)
-			f:SetScript("OnClick", sdm_ChangeIconOkayed)
-			hooksecurefunc("MacroFrame_Update", function() --This function prevents the user from messing with macros created by SDM.
-				local selectedIsSDM = nil
-				local globalTab = (MacroFrame.macroBase==0) --Is this the global tab or the character-specific tab?
-				for i,v in pairs(sdm_macros) do
-					if v.type=="b" and sdm_UsedByThisChar(v) and ((globalTab and (not v.character)) or ((not globalTab) and v.character and v.character.name==sdm_thisChar.name and v.character.realm==sdm_thisChar.realm)) then
-						local index = sdm_GetMacroIndex(v.ID)
-						local prefix = "MacroButton"..index-MacroFrame.macroBase
-						if index == MacroFrame.selectedMacro then --The currently selected macro is a SDM macro.  Deselect it for now, then later select another one.
-							selectedIsSDM = index-MacroFrame.macroBase
-							_G[prefix]:SetChecked(nil)
-							MacroFrame.selectedMacro = nil
-							MacroFrame_HideDetails()
-						end
-						_G[prefix]:Disable()
-						_G[prefix.."Icon"]:SetTexture("Interface\\MacroFrame\\MacroFrame-Icon")
-						_G[prefix.."Name"]:SetText("SDM")
-					end
-				end
-				if selectedIsSDM then
-					local index=selectedIsSDM+1
-					while index<=MacroFrame.macroMax do --if index exceeds this value, we know should stop because we've exceeded the number of slots on this pane.
-						local buttonToCheck = _G["MacroButton"..index]
-						if buttonToCheck:IsEnabled()==1 then
-							buttonToCheck:Click()
-							break
-						end
-						index=index+1
-					end
-				end
-			end)
+			sdm_DefaultMacroFrameLoaded()
 		end
 	elseif event=="PLAYER_REGEN_ENABLED" then
 		sdm_eventFrame:UnregisterEvent("PLAYER_REGEN_ENABLED")
@@ -1486,7 +1489,7 @@ sdm_eventFrame:SetScript("OnEvent", function ()
 end)
 sdm_containerInstructionsString = [[
 Left-click on a folder to open or close it.
-
+
 To place an item into a folder, right-click on the item and then left-click on or in the folder.
 
 To change the name of a folder, click the "Change Name/Icon" button (folders do not have icons).
@@ -1497,7 +1500,12 @@ To bring up these instructions and folder options, alt-click on a folder in the 
 ]]
 sdm_iconSpacing=5/36
 sdm_listLocked=false --if this is true, clicking on a macro in the SDM list will do nothing.
-sdm_macroUILoaded=false --the default macro UI, which normally loads when you type /macro
+if (IsAddOnLoaded("Blizzard_MacroUI")) then
+	sdm_macroUILoaded=true --the default macro UI, which normally loads when you type /macro
+	sdm_DefaultMacroFrameLoaded()
+else
+	sdm_macroUILoaded=false --the default macro UI, which normally loads when you type /macro
+end
 sdm_unusedListItems={}
 sdm_listItems,sdm_unusedListItems[true],sdm_unusedListItems[false]={},{},{}
 sdm_thisChar = {name=UnitName("player"), realm=GetRealmName()}
