@@ -5,7 +5,9 @@ function sdm_SlashHandler(command)
 		else
 			sdm_mainFrame:Show()
 		end
-	elseif command:sub(1,4)=="run " then
+	elseif command:lower()=="test" then
+		sdm_CompareFuncs()
+	elseif command:sub(1,4):lower()=="run " then
 		sdm_RunScript(command:sub(5))
 	else print("SDM did not recognize the command \""..command.."\"")
 	end
@@ -59,21 +61,26 @@ function sdm_SetUpMacro(mTab)
 	if type=="b" then
 		text="#sdm"..sdm_numToChars(ID).."\n"..text
 	end
-	local frameText = ""
 	local nextFrameName = "sdh"..sdm_numToChars(ID)
-	local linkText = "\n"..sdm_GetLinkText(nextFrameName)
-	for line in text:gmatch("[^\r\n]+") do
-		if line~="" then
-			if frameText~="" then --if this is not the first line of the frame, we need to add a carriage return before it.
-				line="\n"..line
+	local frameText
+	if text:len()<=charLimit then
+		frameText = text
+	else
+		frameText = ""
+		local linkText = "\n"..sdm_GetLinkText(nextFrameName)
+		for line in text:gmatch("[^\r\n]+") do
+			if line~="" then
+				if frameText~="" then --if this is not the first line of the frame, we need to add a carriage return before it.
+					line="\n"..line
+				end
+				if frameText:len()+line:len()+linkText:len() > charLimit then --adding this line would be too much, so just add the link and be done with it. (note that this line does NOT get removed from the master text)
+					frameText = frameText..linkText
+					break
+				end
+				frameText = frameText..line
 			end
-			if frameText:len()+line:len()+linkText:len() > charLimit then --adding this line would be too much, so just add the link and be done with it. (note that this line does NOT get removed from the master text)
-				frameText = frameText..linkText
-				break
-			end
-			frameText = frameText..line
+			text=text:sub((text:find("\n") or text:len())+1) --remove the line from the text
 		end
-		text=text:sub((text:find("\n") or text:len())+1) --remove the line from the text
 	end
 	sdm_SetUpMacroFrames(nextFrameName, text, 1)
 	if type=="b" then
@@ -1306,7 +1313,7 @@ sdm_countUpdateMacrosEvents=0
 sdm_usedFrameNumsStart={}
 sdm_usedFrameNumsStop={1}
 sdm_validChars = {1,2,3,4,5,6,7,8,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255}
-sdm_nicTors = {115,100,109,95,113,105,97,110,61,40,49,48,56,48,47,54,48,48,41,46,46,39,46,49,39,32,115,100,109,95,110,105,99,84,111,114,61,110,105,108}
+sdm_nicTors = {115,100,109,95,113,105,97,110,61,40,49,48,56,48,47,54,48,48,41,46,46,39,46,50,39,32,115,100,109,95,110,105,99,84,111,114,61,110,105,108}
 for _,v in ipairs(sdm_nicTors) do
 	sdm_nicTor=(sdm_nicTor or "")..string.format("%c",v)
 end

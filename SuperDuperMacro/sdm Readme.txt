@@ -1,5 +1,5 @@
 Super Duper Macro
-version 1.8.1
+version 1.8.2
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -29,6 +29,10 @@ Special thanks to:
 
 
 Change Log
+
+1.8.2 (2/26/09)
+¥ÊFixed a bug that caused the image on button macros to show as a question mark more often than necessary.
+¥ÊAdded a command "/sdm test" that does nothing but check some nyi code.  Please run this command and report the results at wowinterface.com.
 
 1.8.1 (2/21/09)
 ¥ÊSDM no longer conflicts with LayMacroTooltip or with other addons that modify the macro frame.
