@@ -1,5 +1,5 @@
 Super Duper Macro
-version 1.8.2
+version 1.8.3
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -29,6 +29,10 @@ Special thanks to:
 
 
 Change Log
+
+1.8.3 (2/26/09)
+¥ÊChanging the name of a macro will now properly update the title text above the edit box.
+¥ÊImproved the "/sdm test" function.  Please re-test it and submit your results!
 
 1.8.2 (2/26/09)
 ¥ÊFixed a bug that caused the image on button macros to show as a question mark more often than necessary.

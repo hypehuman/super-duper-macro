@@ -44,7 +44,8 @@ end
 funcsToGetSpell["EQUIP"] = function(msg)
 	local item = SecureCmdOptionParse(msg);
 	if ( item ) then
-		return "item", SecureCmdItemParse(item) --may be in the format "<name>", "item:<ID>", or an itemlink
+		local name, bag, slot = SecureCmdItemParse(item)
+		return "item", name, nil, bag, slot --name may be in the format "<name>", "item:<ID>", or an itemlink
 	end
 end
 
@@ -53,7 +54,8 @@ funcsToGetSpell["EQUIP_TO_SLOT"] = function(msg)
 	if ( action ) then
 		local slot, item = strmatch(action, "^(%d+)%s+(.*)");
 		if ( item ) then
-			return "item", SecureCmdItemParse(item)
+			local name, bag, slot = SecureCmdItemParse(item)
+			return "item", name, nil, bag, slot
 		end
 	end
 end
@@ -123,40 +125,56 @@ function sdm_GetMacrotextAction(multiLineText) -- Input & calculations are adapt
 					--return the info.  If no info, move on to the next line.
 					local type,name,target,bag,slot = sdm_importantSlashHash[command](strtrim(msg))
 					local nameReturn, otherReturn
-					if type=="spell" then
-						nameReturn, otherReturn = GetSpellName(name)
-					elseif type=="item" then
-						nameReturn = GetItemInfo(name)
-						-- this part mimics SecureCmdUseItem in ChatFrame.lua
-						if bag then
-							otherReturn = GetContainerItemLink(bag, slot)
-						elseif slot then
-							otherReturn = GetInventoryItemLink("player", slot)
-						else
-							-- this part may or may not be necessary, but it produces the exact numbers within the item link from GetMacroItem
-							for i=0,23 do
-								local link = GetInventoryItemLink("player",i)
-								if link and link:sub(link:find("%[")+1,link:find("\]")-1)==nameReturn then
-									otherReturn = link
-									break
-								end
-							end
-							if not otherReturn then
-								for i=-2,11 do
-									for j=1,GetContainerNumSlots(i) do
-										local link = GetContainerItemLink(i,j)
-										if link and link:sub(link:find("%[")+1,link:find("\]")-1)==nameReturn then
-											otherReturn = link
+					if type then
+						if not name then return end
+						if type=="spell" then
+							nameReturn, otherReturn = GetSpellName(name)
+							if not nameReturn then
+								for _,companionType in pairs({"MOUNT", "CRITTER"}) do
+									for i=1,GetNumCompanions(companionType) do
+										local _, thisname = GetCompanionInfo(companionType, i)
+										if thisname==name then
+											nameReturn = thisname
+											otherReturn = ""
 											break
 										end
 									end
 								end
 							end
+							if not nameReturn then return end
+						elseif type=="item" then
+							nameReturn = GetItemInfo(name)
+							if not nameReturn then return end
+							-- this part mimics SecureCmdUseItem in ChatFrame.lua
+							if bag then
+								otherReturn = GetContainerItemLink(bag, slot)
+							elseif slot then
+								otherReturn = GetInventoryItemLink("player", slot)
+							else
+								-- this part may or may not be necessary, but it produces the exact numbers within the item link from GetMacroItem
+								for i=0,23 do
+									local link = GetInventoryItemLink("player",i)
+									if link and link:sub(link:find("%[")+1,link:find("\]")-1)==nameReturn then
+										otherReturn = link
+										break
+									end
+								end
+								if not otherReturn then
+									for i=-2,11 do
+										for j=1,GetContainerNumSlots(i) do
+											local link = GetContainerItemLink(i,j)
+											if link and link:sub(link:find("%[")+1,link:find("\]")-1)==nameReturn then
+												otherReturn = link
+												break
+											end
+										end
+									end
+								end
+							end
+							if not otherReturn then _,otherReturn = GetItemInfo(name) end
 						end
-						if not otherReturn then _,otherReturn = GetItemInfo(name) end
+						return type, nameReturn, otherReturn, target, show, showtooltip
 					end
-					if not nameReturn then return end
-					return type, nameReturn, otherReturn, target, show, showtooltip
 				end
 			end
 		end
@@ -180,7 +198,7 @@ function sdm_CompareFuncs()
 				end
 			end
 			if a1~=b1 or a2~=b2 or a3~=b3 then
-				result = (result or "").."body: "..body.."\nBlizz got: "..(a1 or "<nil>").." "..(a2 or "<nil>").." "..(a3 or "<nil>").."\nYou got: "..(b1 or "<nil>").." "..(b2 or "<nil>").." "..(b3 or "<nil>").."\n\n"
+				result = (result or "ver: "..sdm_version.."\n\n").."body: "..body.."\nBlizz got: "..(a1 or "<nil>").." "..(a2 or "<nil>").." "..(a3 or "<nil>").."\nYou got: "..(b1 or "<nil>").." "..(b2 or "<nil>").." "..(b3 or "<nil>").."\n\n"
 			end
 		end
 	end
