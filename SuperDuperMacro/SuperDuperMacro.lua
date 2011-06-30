@@ -9,7 +9,8 @@ function sdm_SlashHandler(command)
 		sdm_CompareFuncs()
 	elseif command:sub(1,4):lower()=="run " then
 		sdm_RunScript(command:sub(5))
-	else print("SDM did not recognize the command \""..command.."\"")
+	else
+	  print("SDM did not recognize the command \""..command.."\"")
 	end
 end
 function sdm_MakeMacroFrame(name, text)
@@ -119,7 +120,7 @@ function sdm_SetUpMacroFrames(clickerName, text, currentLayer) --returns the fra
 	end
 end
 function sdm_Query(channel, target) --next version: have a single token for party and raid, then decide here.
-	SendAddonMessage("Super Duper Macro query", sdm_qian, channel, target)
+	SendAddonMessage("SDM query", sdm_qian, channel, target)
 end
 function sdm_SendMacro(mTab, chan, tar)
 	if sdm_sending then
@@ -702,7 +703,9 @@ function sdm_UpdateList()
 			listItem.slotIcon:SetWidth(sdm_iconSize*64/36)
 			listItem.slotIcon:SetHeight(sdm_iconSize*64/36)
 			if mTab.type=="b" and sdm_UsedByThisChar(mTab) then
-				listItem:SetScript("OnDragStart", function() PickupMacro(sdm_GetMacroIndex(sdm_macros[this.index].ID)) end)
+				listItem:SetScript("OnDragStart", function(self, event, ...) 
+					PickupMacro(sdm_GetMacroIndex(sdm_macros[self.index].ID)) 
+				end)
 			else
 				listItem:SetScript("OnDragStart", nil)
 			end
@@ -973,8 +976,13 @@ function sdm_SaveConfirmationBox(postponed)
 			button1 = "Save", --left button
 			button3 = "Don't Save", --middle button
 			button2 = "Cancel", -- right button
-			OnAccept = function() sdm_Edit(sdm_macros[sdm_currentEdit], sdm_mainFrame_editScrollFrame_text:GetText()) RunScript(postponed) end, --button1 (left)
-			OnAlt = function() RunScript(postponed) end, --button3 (middle)
+			OnAccept = function() 
+				sdm_Edit(sdm_macros[sdm_currentEdit], sdm_mainFrame_editScrollFrame_text:GetText()) 
+				RunScript(postponed) 
+			end, --button1 (left)
+			OnAlt = function() 
+				RunScript(postponed) 
+			end, --button3 (middle)
 			--OnCancel = , --button2 (right)
 			OnShow = sdm_freezeEditFrame,
 			OnHide = sdm_thawEditFrame,
@@ -1258,19 +1266,26 @@ function sdm_DefaultMacroFrameLoaded()
 	f:SetHeight(19)
 	f:SetPoint("TOPLEFT", 68, -14)
 	f:SetText("Super Duper Macro")
-	f:SetScript("OnClick", function() HideUIPanel(MacroFrame) sdm_mainFrame:Show() end)
+	f:SetScript("OnClick", function() 
+		HideUIPanel(MacroFrame)
+		sdm_mainFrame:Show() 
+	end)
 	f = CreateFrame("CheckButton", "$parent_buttonTextCheckBox", MacroPopupFrame, "UICheckButtonTemplate")
 	f:SetWidth(20)
 	f:SetHeight(20)
 	f:SetPoint("TOPLEFT", 25, -18)
-	f:SetScript("OnClick", function() sdm_buttonTextCheckBoxClicked(MacroPopupFrame_buttonTextCheckBox:GetChecked()==1) end)
+	f:SetScript("OnClick", function() 
+		sdm_buttonTextCheckBoxClicked(MacroPopupFrame_buttonTextCheckBox:GetChecked()==1) 
+	end)
 	f:Hide()
 	f = CreateFrame("Button", "$parent_sdmCancelButton", MacroPopupFrame, "UIPanelButtonTemplate")
 	f:SetWidth(78)
 	f:SetHeight(22)
 	f:SetPoint("BOTTOMRIGHT", -11, 13)
 	f:SetText(CANCEL)
-	f:SetScript("OnClick", function() sdm_changeIconFrame:Hide() end)
+	f:SetScript("OnClick", function() 
+		sdm_changeIconFrame:Hide() 
+	end)
 	f = CreateFrame("Button", "$parent_sdmOkayButton", MacroPopupFrame, "UIPanelButtonTemplate")
 	f:SetWidth(78)
 	f:SetHeight(22)
@@ -1326,7 +1341,8 @@ sdm_eventFrame:RegisterEvent("ADDON_LOADED")
 sdm_eventFrame:RegisterEvent("CHAT_MSG_ADDON")
 sdm_eventFrame:RegisterEvent("PARTY_MEMBERS_CHANGED")
 sdm_eventFrame:RegisterEvent("GUILD_ROSTER_UPDATE")
-sdm_eventFrame:SetScript("OnEvent", function ()
+sdm_eventFrame:SetScript("OnEvent", function (self, event, ...)
+	local arg1, arg2, arg3, arg4 = ...;
 	if event=="VARIABLES_LOADED" then
 		local oldVersion = sdm_version
 		sdm_version=GetAddOnMetadata("SuperDuperMacro", "Version") --the version of this addon
@@ -1448,7 +1464,8 @@ sdm_eventFrame:SetScript("OnEvent", function ()
 			end
 		end
 	elseif event=="ADDON_LOADED" then
-		if arg1=="Blizzard_MacroUI" then
+		local addonName = ...;
+		if addonName=="Blizzard_MacroUI" then
 			sdm_DefaultMacroFrameLoaded()
 		end
 	elseif event=="PLAYER_REGEN_ENABLED" then
@@ -1497,13 +1514,17 @@ sdm_eventFrame:SetScript("OnEvent", function ()
 end)
 sdm_containerInstructionsString = [[
 Left-click on a folder to open or close it.
-
+
+
 To place an item into a folder, right-click on the item and then left-click on or in the folder.
-
+
+
 To change the name of a folder, click the "Change Name/Icon" button (folders do not have icons).
-
+
+
 Deleting a folder will move all of its contents into its parent folder.
-
+
+
 To bring up these instructions and folder options, alt-click on a folder in the list.
 ]]
 sdm_iconSpacing=5/36
