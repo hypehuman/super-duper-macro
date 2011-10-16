@@ -1,5 +1,5 @@
 Super Duper Macro
-version 1.8.3
+version 2.0
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -13,18 +13,13 @@ This mod allows you to make two types of macros:
 ¥ Floating macros do not have buttons, and are accessed by /click.  You can make as many of these as you want.
 ¥ You can also make lua scripts of unlimited length that you can call using "/sdm run <name>" or via sdm_RunScript("name")
 
-Features yet to be implemented:
-¥ Allow the user to create folders and subfolders to store macros
-¥ÊImplement a way to pull-out macros during combat
-¥ Add ChattThrottleLib to make macro sharing faster
-¥ÊRemove the dependence upon the default macros, thereby removing the limit on the number of button macros
-
 Suggestions and bug reports are always welcome.  You can post comments on the wowinterface.com page for this addon, or if you want to add something yourself, you can upload it in the "Optional Files" tab.
 
 Special thanks to:
 ¥ SuperMacro, which inspired the idea for this addon.
 ¥ Behaviors, from which I shamelessly copied many UI elements.
 ¥ÊAll the regulars on the UI & Macro forums, who have been guiding me through this process.
+¥Ê
 
 
 
