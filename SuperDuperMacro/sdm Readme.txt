@@ -1,5 +1,5 @@
 Super Duper Macro
-version 2.0
+version 2.1
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -9,7 +9,7 @@ Open the interface by typing /sdm
 This addon allows you to create macros beyond the 255-character limit, and even beyond the 1023-character macrotext limit.  However, no individual line in a macro may be more than 1023 characters long (you will get a warning).  The number of lines is unlimited.  Super Duper Macro also allows you to share macros with your friends in-game.
 
 This mod allows you to make two types of macros:
-¥ Button macros are just like regular macros, but they can be as long as you want.  You cannot make an unlimited number of them; they share a limit with your regular macros (36 global and 36 character-specific for each character).
+¥ Button macros are just like regular macros, but they can be as long as you want.  You cannot make an unlimited number of them; they share a limit with your regular macros (36 global and 18 character-specific for each character).
 ¥ Floating macros do not have buttons, and are accessed by /click.  You can make as many of these as you want.
 ¥ You can also make lua scripts of unlimited length that you can call using "/sdm run <name>" or via sdm_RunScript("name")
 
@@ -19,11 +19,18 @@ Special thanks to:
 ¥ SuperMacro, which inspired the idea for this addon.
 ¥ Behaviors, from which I shamelessly copied many UI elements.
 ¥ÊAll the regulars on the UI & Macro forums, who have been guiding me through this process.
-¥Ê
+¥ survivorx and ambro, who patched this addon while I was AWOL
 
 
 
 Change Log
+
+2.1 (10/19/11)
+¥ÊAdded an "Upgrade" button to the standard macro frame, allowing you to convert a standard macro into a Super Duper macro
+¥ÊRemoved an overbearing version-checking system
+
+2.0 (10/16/11)
+¥ Incorporated compatibility updates by survivorx and ambro
 
 1.8.3 (2/26/09)
 ¥ÊChanging the name of a macro will now properly update the title text above the edit box.
