@@ -25,6 +25,13 @@ Special thanks to:
 
 Change Log
 
+2.2 (11/4/11)
+ナUpgraded macros will now appropriately change their icons based on the macro code (unless an icon other than the Question Mark icon was selected).  If you upgraded a macro with version 2.1, you will need to manually change the icon to the Question Mark icon.
+ナAdded a "Downgrade" button that converts a Super Duper macro into a standard macro
+ナAdded a "Claim"/"Disown" button that allows you to have a single character-specific macro or script that applies to multiple characters
+ナAdded a "Save As..." button that allows you to save an existing macro as a different type or character.  For example, you can save a button macro as a floating macro if you want to free up a macro slot.
+ナSeveral UI improvements; more to come!
+
 2.1 (10/19/11)
 ナAdded an "Upgrade" button to the standard macro frame, allowing you to convert a standard macro into a Super Duper macro
 ナRemoved an overbearing version-checking system

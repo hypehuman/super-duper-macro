@@ -5,7 +5,7 @@ function sdm_SendMacro(mTab, chan, tar)
 	end
 	local perCharacter=nil
 	--make the string that will be split up and sent.  It consists of a bunch of values separated by commas.  They are, in order: the version the sender is running, the minimum version the receiver must have, the type of macro, the index of the icon, the perCharacter status ("<table value>" or "nil"), the length of the name, the length of the text, the name, and the text.  There is no comma between the name and the text.
-	local textToSend = sdm_version..","..sdm_minVersion..","..mTab.type..","..tostring(mTab.icon)..","..tostring(mTab.character)..","..mTab.name:len()..","..mTab.text:len()..","..mTab.name..mTab.text
+	local textToSend = sdm_version..","..sdm_minVersion..","..mTab.type..","..tostring(mTab.icon)..","..tostring(mTab.characters)..","..mTab.name:len()..","..mTab.text:len()..","..mTab.name..mTab.text
 	local pref = "SDM send1" -- if the prefix ends in "send1", it's the first line.  If it ends in "send2", it's any line after the first.
 	local lineLen = 254 - pref:len()
 	local linesToSend={}
@@ -94,6 +94,8 @@ function sdm_WaitForMacro(name)
 	sdm_newFrame_globalRadio:Disable()
 	sdm_newFrame_charspecRadio:Disable()
 	sdm_newFrame_createButton:Disable()
+	sdm_saveAsText = nil
+	sdm_saveAsIcon = nil
 end
 
 function sdm_InterpretAddonMessage(...)

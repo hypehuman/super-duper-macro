@@ -16,7 +16,7 @@
 		</Anchors>
 		<Layers>
 			<Layer level="BACKGROUND">
-				<Texture name="$parentPortrait" file="Interface\MacroFrame\MacroFrame-Icon">
+				<Texture name="$parentPortrait" file="Interface\AddOns\SuperDuperMacro\SDM-Icon.tga">
 					<Size x="60" y="60" />
 					<Anchors>
 						<Anchor point="TOPLEFT">
@@ -437,9 +437,9 @@
 			</Frame>
 		</Frames>
 		<Scripts>
-			<OnMouseDown> self:StartMoving();  </OnMouseDown>
-			<OnMouseUp>  self:StopMovingOrSizing(); </OnMouseUp>
-			<OnDragStop> self:StopMovingOrSizing(); </OnDragStop>
+			<OnMouseDown> sdm_StartMove();  </OnMouseDown>
+			<OnMouseUp> sdm_StopMove(); </OnMouseUp>
+			<OnDragStop> sdm_StopMove(); </OnDragStop>
 			<OnShow>
 				PlaySound "igCharacterInfoOpen"
 				self:SetPoint("TOPLEFT", "UIParent", "TOPLEFT", 0, -104)
@@ -447,7 +447,8 @@
 				sdm_UpdateList()
 			</OnShow>
 			<OnHide>
-				PlaySound "igCharacterInfoClose"
+				PlaySound "igCharacterInfoClose";
+                sdm_StopMove()
 			</OnHide>
 		</Scripts>
 	</Frame>
@@ -690,9 +691,9 @@
 			</Button>
 		</Frames>
 		<Scripts>
-			<OnMouseDown> sdm_mainFrame:StartMoving();  </OnMouseDown>
-			<OnMouseUp>  sdm_mainFrame:StopMovingOrSizing(); </OnMouseUp>
-			<OnDragStop> sdm_mainFrame:StopMovingOrSizing(); </OnDragStop>
+			<OnMouseDown> sdm_StartMove();  </OnMouseDown>
+			<OnMouseUp> sdm_StopMove(); </OnMouseUp>
+			<OnDragStop> sdm_StopMove(); </OnDragStop>
 			<OnLoad>
 				sdm_AddToExclusiveGroup(self, "centerwindows")
 			</OnLoad>
@@ -798,9 +799,9 @@
 			</Button>
 		</Frames>
 		<Scripts>
-			<OnMouseDown> sdm_mainFrame:StartMoving();  </OnMouseDown>
-			<OnMouseUp>  sdm_mainFrame:StopMovingOrSizing(); </OnMouseUp>
-			<OnDragStop> sdm_mainFrame:StopMovingOrSizing(); </OnDragStop>
+			<OnMouseDown> sdm_StartMove();  </OnMouseDown>
+			<OnMouseUp> sdm_StopMove(); </OnMouseUp>
+			<OnDragStop> sdm_StopMove(); </OnDragStop>
 			<OnLoad>
 				sdm_AddToExclusiveGroup(self, "centerwindows")
 			</OnLoad>
@@ -1319,9 +1320,9 @@
 			</Button>
 		</Frames>
 		<Scripts>
-			<OnMouseDown> sdm_mainFrame:StartMoving();  </OnMouseDown>
-			<OnMouseUp>  sdm_mainFrame:StopMovingOrSizing(); </OnMouseUp>
-			<OnDragStop> sdm_mainFrame:StopMovingOrSizing(); </OnDragStop>
+			<OnMouseDown> sdm_StartMove();  </OnMouseDown>
+			<OnMouseUp> sdm_StopMove(); </OnMouseUp>
+			<OnDragStop> sdm_StopMove(); </OnDragStop>
 			<OnHide>
 				if (not sdm_sending) then
 					sdm_sendReceiveFrame_sendBar_statusBar:SetValue(0)

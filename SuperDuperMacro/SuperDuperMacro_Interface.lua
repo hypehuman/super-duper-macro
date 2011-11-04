@@ -1,3 +1,5 @@
+--[[ Interface-related Functions ]]--
+
 function sdm_About()
 	print(sdm_printPrefix.."by hypehuman. Version "..sdm_version..". Check for updates at www.wowinterface.com")
 end
@@ -29,7 +31,7 @@ function sdm_InitializeTypeDropdown()
 		info.func = sdm_FilterButtonClicked;
 		info.checked = sdm_listFilters[info.value];
 		info.keepShownOnClick = 1;
-		UIDropDownMenu_AddButton(info);		
+		UIDropDownMenu_AddButton(info);
 	end
 end
 
@@ -60,9 +62,103 @@ function sdm_NewButtonClicked()
 	sdm_SaveConfirmationBox("sdm_SelectItem(nil) sdm_newFrame:Show() sdm_newFrame_input:SetFocus()")
 end
 
+function sdm_SaveAsButtonClicked()
+	local saved = sdm_macros[sdm_currentEdit]
+	sdm_saveAsText = sdm_mainFrame_editScrollFrame_text:GetText() -- we'll save this text into the new one, but leave the old one unsaved.
+	sdm_saveAsIcon = saved.icon
+	sdm_newFrame:Show()
+	sdm_newFrame_input:SetFocus()
+	sdm_newFrame_input:SetText(saved.name)
+	if saved.type=="b" then
+		sdm_newFrame_buttonRadio:Click()
+	elseif saved.type=="f" then
+		sdm_newFrame_floatingRadio:Click()
+	elseif saved.type=="s" then
+		sdm_newFrame_scriptRadio:Click()
+	end
+	if saved.characters then
+		sdm_newFrame_charspecRadio:Click()
+	else
+		sdm_newFrame_globalRadio:Click()
+	end
+end
+
 function sdm_DeleteButtonClicked()
 	sdm_ChangeContainer(sdm_macros[sdm_currentEdit], false)
 	sdm_SelectItem(nil)
+end
+
+function sdm_ClaimButtonClicked()
+	sdm_AddCharacter(sdm_macros[sdm_currentEdit], sdm_thisChar)
+	sdm_SetUpMacro(sdm_macros[sdm_currentEdit])
+	sdm_UpdateCurrentTitle()
+	sdm_UpdateList()
+	sdm_UpdateClaimDisownButtons()
+end
+
+function sdm_DisownButtonClicked()
+	sdm_UnSetUpMacro(sdm_macros[sdm_currentEdit])
+	sdm_RemoveCharacter(sdm_macros[sdm_currentEdit], sdm_thisChar)
+	sdm_UpdateCurrentTitle()
+	sdm_UpdateList()
+	sdm_UpdateClaimDisownButtons()
+end
+
+function sdm_UpgradeButtonClicked()
+	local index = MacroFrame.selectedMacro
+	if index==nil then
+		print(sdm_printPrefix.."You must select a standard macro first.")
+		return
+	end
+	MacroSaveButton:Click()
+	local newMacro = sdm_UpgradeMacro(index)
+	if newMacro==nil then
+		return
+	end
+	MacroFrame_linkToSDM:Click() -- show the SDM frame
+	sdm_SelectItem(newMacro.ID) -- select the newly upgraded macro
+	MacroFrame.selectedMacro = nil -- deselect the macro in the standard macro frame
+end
+
+function sdm_DowngradeButtonClicked()
+	sdm_mainFrame_saveButton:Click()
+	local index = sdm_DowngradeMacro(sdm_macros[sdm_currentEdit])
+	if index==nil then
+		return
+	end
+	sdm_SelectItem(nil) -- deselect the macro in the SDM frame
+	sdm_mainFrame_linkToMacroFrame:Click() -- show the standard macro frame
+	local buttonName = "MacroButton"
+	if index<=36 then -- global macro
+		MacroFrameTab1:Click()
+		buttonName = buttonName..index
+	else -- character-specific macro
+		MacroFrameTab2:Click()
+		buttonName = buttonName..(index-36)
+	end
+	getglobal(buttonName):Click() -- select the newly downgraded macro
+end
+
+function sdm_OnEnterTippedButton(self)
+	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+	GameTooltip:SetText(self.tooltipText, nil, nil, nil, nil, true)
+	GameTooltip:Show()
+end
+
+function sdm_OnLeaveTippedButton()
+	GameTooltip_Hide()
+end
+
+-- if text is provided, sets up the button to show a tooltip when moused over. Otherwise, removes the tooltip.
+function sdm_SetTooltip(self, text)
+	if text then
+		self.tooltipText = text
+		self:SetScript("OnEnter", sdm_OnEnterTippedButton)
+		self:SetScript("OnLeave", sdm_OnLeaveTippedButton)
+	else
+		self:SetScript("OnEnter", nil)
+		self:SetScript("OnLeave", nil)
+	end
 end
 
 function sdm_ListItemClicked(self, button)
@@ -95,37 +191,64 @@ function sdm_SelectItem(newCurrentEdit)
 	else
 		sdm_currentEdit = nil
 	end
-	if (not sdm_currentEdit) then
+	local mTab = sdm_macros[sdm_currentEdit]
+	if (not mTab) then
 		sdm_mainFrame_deleteButton:Disable()
 		sdm_mainFrame_getLinkButton:Disable()
 		sdm_mainFrame_changeIconButton:Disable()
 		sdm_mainFrame_editScrollFrame:Hide()
 		sdm_mainFrame_saveButton:Disable()
+		sdm_mainFrame_saveAsButton:Disable()
+		sdm_mainFrame_downgradeButton:Disable()
 		sdm_sendReceiveFrame_sendButton:Disable()
 		sdm_containerInstructions:Hide()
-		sdm_currentTitle:Hide()
 	else
 		sdm_mainFrame_editScrollFrame_text:ClearFocus()
 		sdm_mainFrame_deleteButton:Enable()
 		sdm_mainFrame_changeIconButton:Enable()
-		if sdm_macros[sdm_currentEdit].type=="c" then
+		if mTab.type=="c" then
 			sdm_mainFrame_editScrollFrame:Hide()
 			sdm_containerInstructions:Show()
 			sdm_mainFrame_getLinkButton:Disable()
+			sdm_mainFrame_saveAsButton:Disable()
 		else
 			sdm_mainFrame_editScrollFrame:Show()
 			sdm_containerInstructions:Hide()
 			sdm_mainFrame_getLinkButton:Enable()
+			sdm_mainFrame_saveAsButton:Enable()
+			if mTab.type=="b" and sdm_UsedByThisChar(mTab) then
+				sdm_mainFrame_downgradeButton:Enable()
+			else
+				sdm_mainFrame_downgradeButton:Disable()
+			end
 		end
-		sdm_mainFrame_editScrollFrame_text:SetText(sdm_macros[sdm_currentEdit].text or "")
+		sdm_mainFrame_editScrollFrame_text:SetText(mTab.text or "")
 		sdm_mainFrame_saveButton:Disable()
 		if not sdm_sending then
 			sdm_sendReceiveFrame_sendButton:Enable()
 		end
-		sdm_currentTitle:SetText(sdm_GetColor(sdm_macros[sdm_currentEdit].type, sdm_GetTitle(sdm_macros[sdm_currentEdit])))
-		sdm_currentTitle:Show()
 	end
+	sdm_UpdateClaimDisownButtons()
+	sdm_UpdateCurrentTitle()
 	sdm_UpdateList()
+end
+
+function sdm_UpdateClaimDisownButtons()
+	local mTab = sdm_macros[sdm_currentEdit]
+	if mTab and mTab.characters then
+		sdm_mainFrame_claimButton:Enable()
+		sdm_mainFrame_disownButton:Enable()
+	else
+		sdm_mainFrame_claimButton:Disable()
+		sdm_mainFrame_disownButton:Disable()
+	end
+	if sdm_UsedByThisChar(mTab) then
+		sdm_mainFrame_claimButton:Hide()
+		sdm_mainFrame_disownButton:Show()
+	else
+		sdm_mainFrame_claimButton:Show()
+		sdm_mainFrame_disownButton:Hide()
+	end
 end
 
 function sdm_ResetContainers() --Deletes all folders and places all items into the main list
@@ -167,13 +290,8 @@ function sdm_ChangeContainer(mTab, newContainer) --removes the mTab from its cur
 				sdm_macros[ID].container=mTab.container
 				sdm_SortedInsert(prevContents, sdm_macros[ID])
 			end
-		elseif sdm_UsedByThisChar(mTab) then
-			if type=="b" or type=="f" then
-				sdm_DoOrQueue("getglobal("..sdm_Stringer("sd"..type.."_"..mTab.name).."):SetAttribute(\"type\", nil)")
-				if type=="b" then
-					sdm_DoOrQueue("DeleteMacro(sdm_GetMacroIndex("..sdm_Stringer(mTab.ID).."))")
-				end
-			end
+		else
+			sdm_UnSetUpMacro(mTab)
 		end
 		sdm_macros[mTab.ID]=nil
 	else --move mTab into newContainer
@@ -208,17 +326,27 @@ end
 function sdm_IsAtLeast(one, two, i) --sees if the first mTab is greater than or equal to the second. This is used for sorting them in the list.
 	i=i or 1
 	local var
-	if i==1 then
-		var=function(mTab) return mTab.name:upper() end
-	elseif i==2 then
-		var=function(mTab) return mTab.name end
-	elseif i==3 then
-		var=function(mTab) return mTab.type end
-	elseif i==4 then
-		var=function(mTab) if mTab.character then return mTab.character.name end return string.format('%c', 1) end
-	elseif i==5 then
-		var=function(mTab) if mTab.character then return mTab.character.realm end return string.format('%c', 1) end
-	else
+	if i==1 then -- first sort by case-insensitive name
+		var=function(mTab)
+			return mTab.name:upper()
+		end
+	elseif i==2 then -- if the case-insensitive names are the same, sort by case-sensitive name
+		var=function(mTab)
+			return mTab.name
+		end
+	elseif i==3 then -- if the case-sensitive names are the same, sort by type (folder, button, floating, script)
+		var=function(mTab)
+			return mTab.type
+		end
+	elseif i==4 then -- if the types are the same, sort by global/percharacter
+		var=function(mTab)
+			if mTab.characters then
+				return "1"
+			else
+				return "0"
+			end
+		end
+	else -- If they are both global or both percharacter, the macros are equivalent.
 		return true
 	end
 	if var(one) > var(two) then
@@ -290,6 +418,7 @@ function sdm_UpdateList()
 			else
 				listItem.icon:SetTexture("Interface\\Buttons\\UI-PlusButton-UP")
 			end
+			sdm_SetTooltip(listItem, "Alt-click for folder options")
 		else
 			if mTab.icon==1 then
 				if mTab.type=="b" and sdm_UsedByThisChar(mTab) then
@@ -341,12 +470,48 @@ function sdm_UpdateList()
 	end
 end
 
+function sdm_UpdateCurrentTitle()
+	local mTab = sdm_macros[sdm_currentEdit]
+	if mTab then
+		sdm_currentTitle:Show()
+		sdm_currentTitle:SetText(sdm_GetColoredTitle(mTab))
+	else
+		sdm_currentTitle:Hide()
+	end
+end
+
 function sdm_GetTitle(mTab) -- the title that will be displayed in the list
 	local result = mTab.name
-	if mTab.character then
-		result=result..sdm_GetColor(tostring(mTab.character.name..mTab.character.realm==sdm_thisChar.name..sdm_thisChar.realm), " ("..mTab.character.name.." of "..mTab.character.realm..")")
+	if mTab.characters then
+		local lightTxt, darkTxt
+		if sdm_UsedByThisChar(mTab) then
+			lightTxt = " "..sdm_thisChar.name.." of "..sdm_thisChar.realm
+			lightTxt = sdm_GetColor("true", lightTxt)
+		else
+			if mTab.characters[1] == nil then -- this item is character-specific, but it has not been claimed by any characters.
+				darkTxt = " disowned"
+			else
+				darkTxt = " "..mTab.characters[1].name.." of "..mTab.characters[1].realm
+			end
+		end
+		if mTab.characters[2] then
+			darkTxt = (darkTxt or "").." and others"
+		end
+		if lightTxt then
+			lightTxt = sdm_GetColor("true", lightTxt)
+			result = result..lightTxt
+		end
+		if darkTxt then
+			darkTxt = sdm_GetColor("false", darkTxt)
+			result = result..darkTxt
+		end
 	end
 	return result
+end
+
+function sdm_GetColoredTitle(mTab)
+	local title = sdm_GetTitle(mTab)
+	return sdm_GetColor(mTab.type, title)
 end
 
 function sdm_AddFolderContents(mTabs, offsets, contents, offset) --Populates mTabs with the elements of contents and all its subfolders.  Populates offsets with the amount of indentation for each item.
@@ -363,16 +528,16 @@ function sdm_AddFolderContents(mTabs, offsets, contents, offset) --Populates mTa
 end
 
 function sdm_IncludeInList(mTab) --checks the filters to see if the item should be in the scrolling list
-	if mTab.type=="c" then
+	if mTab.type=="c" then -- always show folders (aka containers)
 		return true
 	end
-	if not sdm_listFilters[mTab.type] then
+	if not sdm_listFilters[mTab.type] then -- if this item's type is not included in the filter, don't show it!
 		return false
 	end
-	if not mTab.character then
+	if not mTab.characters then -- if this item is global and globals are not included in the filter, don't show it!
 		return sdm_listFilters["global"]
 	end
-	return sdm_listFilters[tostring(mTab.character.name..mTab.character.realm==sdm_thisChar.name..sdm_thisChar.realm)]
+	return sdm_listFilters[tostring(sdm_UsedByThisChar(mTab))] -- take care of this character's and other character's items
 end
 
 function sdm_MakeTextWhite(listItem)
@@ -507,7 +672,7 @@ function sdm_ChangeIconOkayed()
 		return
 	end
 	if (mTab.type=="b" or mTab.type=="f") and sdm_ContainsIllegalChars(nameInputted, true) then return end
-	if sdm_DoesNameConflict(nameInputted, mTab.type, mTab.character, sdm_currentEdit, true) then
+	if sdm_DoesNameConflict(nameInputted, mTab.type, mTab.characters, sdm_currentEdit, true) then
 		return
 	end
 	local oldName = mTab.name
@@ -538,7 +703,7 @@ function sdm_ChangeIconOkayed()
 			sdm_MakeBlizzardMacro(mTab.ID, (mTab.buttonName or mTab.name), mTab.icon)
 		end
 	end
-	sdm_currentTitle:SetText(sdm_GetColor(sdm_macros[sdm_currentEdit].type, sdm_GetTitle(sdm_macros[sdm_currentEdit])))
+	sdm_UpdateCurrentTitle()
 	sdm_UpdateList()
 end
 
@@ -704,7 +869,9 @@ function sdm_ExclusiveWindowShown(f) --when a window in the group is shown, disa
 			button:Disable()
 		end
 	end
-	sdm_listLocked=true --this should only apply to the "centerwindows" group, but right now that's all there is.
+	if f.exclusiveGroupKey=="centerwindows" then
+		sdm_listLocked = true
+	end
 end
 
 function sdm_ExclusiveWindowHidden(f) --reenable the buttons.
@@ -715,80 +882,36 @@ function sdm_ExclusiveWindowHidden(f) --reenable the buttons.
 		end
 	end
 	t.isEnabled=nil
-	sdm_listLocked=false --this should only apply to the "centerwindows" group, but right now that's all there is.
+	if f.exclusiveGroupKey=="centerwindows" then
+		sdm_listLocked = false
+	end
+end
+
+function sdm_StartMove()
+	if not sdm_mainFrameIsMoving then
+		sdm_mainFrameIsMoving = true
+		sdm_mainFrame:StartMoving()
+	end
+end
+
+function sdm_StopMove()
+	if sdm_mainFrameIsMoving then
+		sdm_mainFrameIsMoving = false
+		sdm_mainFrame:StopMovingOrSizing()
+	end
 end
 
 function sdm_DefaultMacroFrameLoaded()
-	sdm_eventFrame:UnregisterEvent("ADDON_LOADED")
 	sdm_macroUILoaded=true
 	select(6, MacroFrame:GetRegions()):SetPoint("TOP",MacroFrame, "TOP", 76, -17) -- Move the text "Create Macros" 76 units to the right.
 
-	local f
-
-	--Create the button that links from the default macro frame to the SDM frame
-	f = CreateFrame("Button", "$parent_linkToSDM", MacroFrame, "UIPanelButtonTemplate")
-	f:SetWidth(150)
-	f:SetHeight(19)
-	f:SetPoint("TOPLEFT", 68, -14)
-	f:SetText("Super Duper Macro")
-	f:SetScript("OnClick", function() 
-		HideUIPanel(MacroFrame)
-		sdm_mainFrame:Show() 
-	end)
-
-	--Create the button that turns a regular macro into a Super Duper macro
-	f = CreateFrame("Button", "$parent_convertToSuper", MacroFrame, "UIPanelButtonTemplate")
-	f:SetPoint("TOPLEFT", MacroDeleteButton, "TOPRIGHT")
-	f:SetPoint("BOTTOMRIGHT", MacroNewButton, "BOTTOMLEFT")
-	f:SetText("Upgrade!  ")
-	local t = f:CreateTexture()
-	margin = 0.25 * f:GetHeight()
-	t:SetPoint("TOPRIGHT", f, "TOPRIGHT", -margin, -margin)
-	t:SetPoint("BOTTOM", f, "BOTTOM", 0, margin)
-	t:SetWidth(t:GetHeight())
-	t:SetTexture("Interface\\MacroFrame\\MacroFrame-Icon")
-	local t2 = f:CreateTexture(nil, "OVERLAY")
-	t2:SetTexture(t:GetTexture())
-	t2:SetAllPoints(t)
-	local t3 = f:CreateTexture(nil, "HIGHLIGHT")
-	t3:SetTexture(t:GetTexture())
-	t3:SetAllPoints(t)
-	f:SetScript("OnClick", function()
-		if MacroFrame.selectedMacro then
-			sdm_UpgradeMacro(MacroFrame.selectedMacro)
-		end
-	end)
-
-	f = CreateFrame("CheckButton", "$parent_buttonTextCheckBox", MacroPopupFrame, "UICheckButtonTemplate")
-	f:SetWidth(20)
-	f:SetHeight(20)
-	f:SetPoint("TOPLEFT", 25, -18)
-	f:SetScript("OnClick", function() 
-		sdm_buttonTextCheckBoxClicked(MacroPopupFrame_buttonTextCheckBox:GetChecked()==1) 
-	end)
-	f:Hide()
-
-	f = CreateFrame("Button", "$parent_sdmCancelButton", MacroPopupFrame, "UIPanelButtonTemplate")
-	f:SetWidth(78)
-	f:SetHeight(22)
-	f:SetPoint("BOTTOMRIGHT", -11, 13)
-	f:SetText(CANCEL)
-	f:SetScript("OnClick", function() 
-		sdm_changeIconFrame:Hide()
-	end)
-
-	f = CreateFrame("Button", "$parent_sdmOkayButton", MacroPopupFrame, "UIPanelButtonTemplate")
-	f:SetWidth(78)
-	f:SetHeight(22)
-	f:SetPoint("RIGHT", MacroPopupCancelButton, "LEFT", -2, 0)
-	f:SetText(OKAY)
-	f:SetScript("OnClick", sdm_ChangeIconOkayed)
+	sdm_CreateDefaultMacroFrameButtons()
 
 	hooksecurefunc("MacroFrame_Update", function() --This function prevents the user from messing with macros created by SDM.
 		local selectedIsSDM = nil
 		local globalTab = (MacroFrame.macroBase==0) --Is this the global tab or the character-specific tab?
 		for i,v in pairs(sdm_macros) do
-			if v.type=="b" and sdm_UsedByThisChar(v) and ((globalTab and (not v.character)) or ((not globalTab) and v.character and v.character.name==sdm_thisChar.name and v.character.realm==sdm_thisChar.realm)) then
+			if v.type=="b" and sdm_UsedByThisChar(v) and ((globalTab and v.characters==nil) or ((not globalTab) and v.characters)) then -- if this item is supposed to have a macro in this tab
 				local index = sdm_GetMacroIndex(v.ID)
 				local prefix = "MacroButton"..index-MacroFrame.macroBase
 				if index == MacroFrame.selectedMacro then --The currently selected macro is a SDM macro.  Deselect it for now, then later select another one.
@@ -798,7 +921,7 @@ function sdm_DefaultMacroFrameLoaded()
 					MacroFrame_HideDetails()
 				end
 				_G[prefix]:Disable()
-				_G[prefix.."Icon"]:SetTexture("Interface\\MacroFrame\\MacroFrame-Icon")
+				_G[prefix.."Icon"]:SetTexture("Interface\\AddOns\\SuperDuperMacro\\SDM-Icon.tga")
 				_G[prefix.."Name"]:SetText("SDM")
 			end
 		end
@@ -816,6 +939,21 @@ function sdm_DefaultMacroFrameLoaded()
 	end)
 end
 
+--[[ Interface-related Variables ]]--
+
+sdm_iconSpacing=5/36
+sdm_listLocked=false --if this is true, clicking on a macro in the SDM list will not select it.
+if (IsAddOnLoaded("Blizzard_MacroUI")) then
+	sdm_macroUILoaded=true --the default macro UI, which normally loads when you type /macro
+	sdm_DefaultMacroFrameLoaded()
+else
+	sdm_macroUILoaded=false --the default macro UI, which normally loads when you type /macro
+	sdm_eventFrame:RegisterEvent("ADDON_LOADED")
+end
+sdm_unusedListItems={}
+sdm_listItems,sdm_unusedListItems[true],sdm_unusedListItems[false]={},{},{}
+sdm_listItemPrefix = "sdm_mainFrame_macrosScroll_macroList_listItem"
+
 sdm_containerInstructionsString = [[
 Left-click on a folder to open or close it.
 
@@ -831,15 +969,3 @@ Deleting a folder will move all of its contents into its parent folder.
 
 To bring up these instructions and folder options, alt-click on a folder in the list.
 ]]
-
-sdm_iconSpacing=5/36
-sdm_listLocked=false --if this is true, clicking on a macro in the SDM list will do nothing.
-if (IsAddOnLoaded("Blizzard_MacroUI")) then
-	sdm_macroUILoaded=true --the default macro UI, which normally loads when you type /macro
-	sdm_DefaultMacroFrameLoaded()
-else
-	sdm_macroUILoaded=false --the default macro UI, which normally loads when you type /macro
-end
-sdm_unusedListItems={}
-sdm_listItems,sdm_unusedListItems[true],sdm_unusedListItems[false]={},{},{}
-sdm_listItemPrefix = "sdm_mainFrame_macrosScroll_macroList_listItem"

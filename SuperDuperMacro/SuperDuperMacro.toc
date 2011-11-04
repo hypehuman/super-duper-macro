@@ -2,9 +2,10 @@
 ## Title : Super Duper Macro
 ## Notes: Enables creation of incredibly long macros.
 ## Author: hypehuman
-## Version: 2.1
+## Version: 2.2
 ## SavedVariables: sdm_version, sdm_listFilters, sdm_iconSize, sdm_mainContents, sdm_macros
-SuperDuperMacro.lua
+SuperDuperMacro_Core.lua
 SuperDuperMacro_Interface.lua
 SuperDuperMacro_Sharing.lua
-SuperDuperMacro.xml
+SuperDuperMacro_Frames.xml
+SuperDuperMacro_Frames.lua
