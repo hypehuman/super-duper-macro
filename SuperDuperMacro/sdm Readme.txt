@@ -25,6 +25,10 @@ Special thanks to:
 
 Change Log
 
+2.2.1 (11/15/11)
+ナFixed a bug where the macro list sometimes became unclickable
+ナFixed a bug that sometimes caused buttons to show in the wrong places
+
 2.2 (11/4/11)
 ナUpgraded macros will now appropriately change their icons based on the macro code (unless an icon other than the Question Mark icon was selected).  If you upgraded a macro with version 2.1, you will need to manually change the icon to the Question Mark icon.
 ナAdded a "Downgrade" button that converts a Super Duper macro into a standard macro

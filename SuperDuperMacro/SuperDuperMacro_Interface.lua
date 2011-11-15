@@ -358,6 +358,12 @@ function sdm_IsAtLeast(one, two, i) --sees if the first mTab is greater than or 
 	end
 end
 
+-- these names aren't really used by the program; they're just there because unnamed frames can sometimes behave strangely
+function CreateListItemFrameName()
+	sdm_numListItemsNamed = (sdm_numListItemsNamed or 0) + 1
+	return "sdm_ListButton"..sdm_numListItemsNamed
+end
+
 function sdm_UpdateList()
 	if not sdm_mainFrame:IsShown() then return end
 	local f
@@ -376,7 +382,7 @@ function sdm_UpdateList()
 		listItem = table.remove(sdm_unusedListItems[isContainer],1)
 		if not listItem then
 			--create the listItem
-			listItem = CreateFrame("Button", nil, sdm_mainFrame_macrosScroll_macroList)
+			listItem = CreateFrame("Button", CreateListItemFrameName(), sdm_mainFrame_macrosScroll_macroList)
 			listItem.icon = listItem:CreateTexture(nil, "OVERLAY")
 			listItem.text = listItem:CreateFontString(nil,"ARTWORK","GameFontNormal")
 			listItem.text:SetJustifyH("LEFT")
