@@ -241,7 +241,7 @@ function sdm_SetUpMacroFrames(clickerName, text, currentLayer) --returns the fra
 	end
 end
 
-function sdm_CreateCancelButtonPressed()
+function sdm_CancelNewMacroButtonPressed()
 	sdm_newFrame:Hide()
 	if sdm_receiving then
 		sdm_CancelReceive()
@@ -295,7 +295,7 @@ end
 function sdm_Edit(mTab, text)
 	mTab.text=text
 	sdm_SetUpMacro(mTab)
-	sdm_mainFrame_saveButton:Disable()
+	sdm_saveButton:Disable()
 end
 
 function sdm_CheckCreationSafety(type, name, character) --returns the mTab of the new macro, or nil if creation failed

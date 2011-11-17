@@ -1,5 +1,5 @@
 Super Duper Macro
-version 2.1
+version 2.3
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -24,6 +24,10 @@ Special thanks to:
 
 
 Change Log
+
+2.3 (11/16/11)
+¥ÊThe SDM frame now hides when you press escape!
+¥ÊAdded more tooltips; still more to come
 
 2.2.1 (11/15/11)
 ¥ÊFixed a bug where the macro list sometimes became unclickable

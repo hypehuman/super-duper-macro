@@ -59,7 +59,7 @@ function sdm_FilterButtonClicked(self, _, _, on)
 end
 
 function sdm_NewButtonClicked()
-	sdm_SaveConfirmationBox("sdm_SelectItem(nil) sdm_newFrame:Show() sdm_newFrame_input:SetFocus()")
+	sdm_SaveConfirmationBox("sdm_SelectItem(nil) sdm_newFrame:Show() sdm_newMacroNameInput:SetFocus()")
 end
 
 function sdm_SaveAsButtonClicked()
@@ -67,19 +67,19 @@ function sdm_SaveAsButtonClicked()
 	sdm_saveAsText = sdm_mainFrame_editScrollFrame_text:GetText() -- we'll save this text into the new one, but leave the old one unsaved.
 	sdm_saveAsIcon = saved.icon
 	sdm_newFrame:Show()
-	sdm_newFrame_input:SetFocus()
-	sdm_newFrame_input:SetText(saved.name)
+	sdm_newMacroNameInput:SetFocus()
+	sdm_newMacroNameInput:SetText(saved.name)
 	if saved.type=="b" then
-		sdm_newFrame_buttonRadio:Click()
+		sdm_buttonRadio:Click()
 	elseif saved.type=="f" then
-		sdm_newFrame_floatingRadio:Click()
+		sdm_floatingRadio:Click()
 	elseif saved.type=="s" then
-		sdm_newFrame_scriptRadio:Click()
+		sdm_scriptRadio:Click()
 	end
 	if saved.characters then
-		sdm_newFrame_charspecRadio:Click()
+		sdm_charspecRadio:Click()
 	else
-		sdm_newFrame_globalRadio:Click()
+		sdm_globalRadio:Click()
 	end
 end
 
@@ -121,13 +121,13 @@ function sdm_UpgradeButtonClicked()
 end
 
 function sdm_DowngradeButtonClicked()
-	sdm_mainFrame_saveButton:Click()
+	sdm_saveButton:Click()
 	local index = sdm_DowngradeMacro(sdm_macros[sdm_currentEdit])
 	if index==nil then
 		return
 	end
 	sdm_SelectItem(nil) -- deselect the macro in the SDM frame
-	sdm_mainFrame_linkToMacroFrame:Click() -- show the standard macro frame
+	sdm_Quit(" ShowMacroFrame()") -- show the standard macro frame
 	local buttonName = "MacroButton"
 	if index<=36 then -- global macro
 		MacroFrameTab1:Click()
@@ -193,29 +193,33 @@ function sdm_SelectItem(newCurrentEdit)
 	end
 	local mTab = sdm_macros[sdm_currentEdit]
 	if (not mTab) then
-		sdm_mainFrame_deleteButton:Disable()
-		sdm_mainFrame_getLinkButton:Disable()
-		sdm_mainFrame_changeIconButton:Disable()
+		sdm_deleteButton:Disable()
+		sdm_usageButton:Disable()
+		sdm_changeIconButton:Disable()
 		sdm_mainFrame_editScrollFrame:Hide()
-		sdm_mainFrame_saveButton:Disable()
-		sdm_mainFrame_saveAsButton:Disable()
+		sdm_saveButton:Disable()
+		sdm_saveAsButton:Disable()
 		sdm_mainFrame_downgradeButton:Disable()
 		sdm_sendReceiveFrame_sendButton:Disable()
 		sdm_containerInstructions:Hide()
 	else
 		sdm_mainFrame_editScrollFrame_text:ClearFocus()
-		sdm_mainFrame_deleteButton:Enable()
-		sdm_mainFrame_changeIconButton:Enable()
+		sdm_deleteButton:Enable()
+		sdm_changeIconButton:Enable()
 		if mTab.type=="c" then
 			sdm_mainFrame_editScrollFrame:Hide()
 			sdm_containerInstructions:Show()
-			sdm_mainFrame_getLinkButton:Disable()
-			sdm_mainFrame_saveAsButton:Disable()
+			sdm_usageButton:Disable()
+			sdm_saveAsButton:Disable()
+			sdm_sendReceiveFrame_sendButton:Disable()
 		else
+			if not sdm_sending then
+				sdm_sendReceiveFrame_sendButton:Enable()
+			end
 			sdm_mainFrame_editScrollFrame:Show()
 			sdm_containerInstructions:Hide()
-			sdm_mainFrame_getLinkButton:Enable()
-			sdm_mainFrame_saveAsButton:Enable()
+			sdm_usageButton:Enable()
+			sdm_saveAsButton:Enable()
 			if mTab.type=="b" and sdm_UsedByThisChar(mTab) then
 				sdm_mainFrame_downgradeButton:Enable()
 			else
@@ -223,10 +227,7 @@ function sdm_SelectItem(newCurrentEdit)
 			end
 		end
 		sdm_mainFrame_editScrollFrame_text:SetText(mTab.text or "")
-		sdm_mainFrame_saveButton:Disable()
-		if not sdm_sending then
-			sdm_sendReceiveFrame_sendButton:Enable()
-		end
+		sdm_saveButton:Disable()
 	end
 	sdm_UpdateClaimDisownButtons()
 	sdm_UpdateCurrentTitle()
@@ -424,7 +425,7 @@ function sdm_UpdateList()
 			else
 				listItem.icon:SetTexture("Interface\\Buttons\\UI-PlusButton-UP")
 			end
-			sdm_SetTooltip(listItem, "Alt-click for folder options")
+			sdm_SetTooltip(listItem, "Alt-click for folder options and instructions")
 		else
 			if mTab.icon==1 then
 				if mTab.type=="b" and sdm_UsedByThisChar(mTab) then
@@ -645,7 +646,7 @@ function sdm_OnShow_changeIconFrame(f)
 		f.fontstring:Hide()
 	end
 	MacroPopupFrame_buttonTextCheckBox:GetScript("OnClick")(MacroPopupFrame_buttonTextCheckBox)
-	sdm_changeIconFrame_input:SetText(mTab.name or "")
+	sdm_changeNameInput:SetText(mTab.name or "")
 end
 
 function sdm_OnHide_changeIconFrame(f)
@@ -672,7 +673,7 @@ end
 
 function sdm_ChangeIconOkayed()
 	local mTab = sdm_macros[sdm_currentEdit]
-	local nameInputted = sdm_changeIconFrame_input:GetText()
+	local nameInputted = sdm_changeNameInput:GetText()
 	local iconInputted = MacroPopupFrame.selectedIcon
 	if (not nameInputted) or nameInputted=="" or (mTab.type~="c" and not iconInputted) then
 		return
@@ -783,7 +784,7 @@ function sdm_SaveConfirmationBox(postponed)
 	end
 end
 
-function sdm_GetLink(mTab)
+function sdm_ShowUsage(mTab)
 	if sdm_UsedByThisChar(mTab) then
 		if mTab.type=="b" then
 			print(sdm_printPrefix.."To run this macro, drag the button from the list and place it on your action bar, or use "..string.format("%q", "/click sdb_"..mTab.name).." (case-sensitive).")
@@ -817,20 +818,20 @@ function sdm_Quit(append)
 	sdm_SaveConfirmationBox(scriptOnQuit)
 end
 
-function sdm_CreateButtonClicked()
-	local name = sdm_newFrame_input:GetText()
+function sdm_CreateMacroButtonClicked()
+	local name = sdm_newMacroNameInput:GetText()
 
 	local type = nil
-	if sdm_newFrame_buttonRadio:GetChecked() then
+	if sdm_buttonRadio:GetChecked() then
 		type="b"
-	elseif sdm_newFrame_floatingRadio:GetChecked() then
+	elseif sdm_floatingRadio:GetChecked() then
 		type="f"
-	elseif sdm_newFrame_scriptRadio:GetChecked() then
+	elseif sdm_scriptRadio:GetChecked() then
 		type="s"
 	end
 
 	local character
-	if sdm_newFrame_charspecRadio:GetChecked() then
+	if sdm_charspecRadio:GetChecked() then
 		character = sdm_thisChar
 	end
 
@@ -842,7 +843,7 @@ function sdm_CreateButtonClicked()
 end
 
 function sdm_CreateFolderButtonClicked()
-	local name = sdm_newFolderFrame_input:GetText()
+	local name = sdm_newFolderNameInput:GetText()
 	if name=="" then
 		return
 	end
@@ -928,7 +929,7 @@ function sdm_DefaultMacroFrameLoaded()
 				end
 				_G[prefix]:Disable()
 				_G[prefix.."Icon"]:SetTexture("Interface\\AddOns\\SuperDuperMacro\\SDM-Icon.tga")
-				_G[prefix.."Name"]:SetText("SDM")
+				_G[prefix.."Name"]:SetText("|cff000000SDM|r")
 			end
 		end
 		if selectedIsSDM then
