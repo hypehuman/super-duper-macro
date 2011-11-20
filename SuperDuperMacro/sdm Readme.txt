@@ -1,5 +1,5 @@
 Super Duper Macro
-version 2.3
+version 2.4
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -25,13 +25,17 @@ Special thanks to:
 
 Change Log
 
+2.4 (11/20/11)
+¥ÊFixed the Send/Receive feature; now you can share macros with your friends again, as long as you are both using the latest version.
+¥ Fixed a bug where buttons on the SDM frame would sometimes stretch away
+¥ÊMany UI Improvements
+
 2.3 (11/16/11)
 ¥ÊThe SDM frame now hides when you press escape!
 ¥ÊAdded more tooltips; still more to come
 
 2.2.1 (11/15/11)
 ¥ÊFixed a bug where the macro list sometimes became unclickable
-¥ÊFixed a bug that sometimes caused buttons to show in the wrong places
 
 2.2 (11/4/11)
 ¥ÊUpgraded macros will now appropriately change their icons based on the macro code (unless an icon other than the Question Mark icon was selected).  If you upgraded a macro with version 2.1, you will need to manually change the icon to the Question Mark icon.

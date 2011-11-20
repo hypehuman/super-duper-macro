@@ -59,12 +59,12 @@ function sdm_FilterButtonClicked(self, _, _, on)
 end
 
 function sdm_NewButtonClicked()
-	sdm_SaveConfirmationBox("sdm_SelectItem(nil) sdm_newFrame:Show() sdm_newMacroNameInput:SetFocus()")
+	sdm_SaveConfirmationBox("sdm_newFrame:Show() sdm_newMacroNameInput:SetFocus()")
 end
 
 function sdm_SaveAsButtonClicked()
 	local saved = sdm_macros[sdm_currentEdit]
-	sdm_saveAsText = sdm_mainFrame_editScrollFrame_text:GetText() -- we'll save this text into the new one, but leave the old one unsaved.
+	sdm_saveAsText = sdm_bodyBox:GetText() -- we'll save this text into the new one, but leave the old one unsaved.
 	sdm_saveAsIcon = saved.icon
 	sdm_newFrame:Show()
 	sdm_newMacroNameInput:SetFocus()
@@ -196,37 +196,37 @@ function sdm_SelectItem(newCurrentEdit)
 		sdm_deleteButton:Disable()
 		sdm_usageButton:Disable()
 		sdm_changeIconButton:Disable()
-		sdm_mainFrame_editScrollFrame:Hide()
+		sdm_bodyScroller:Hide()
 		sdm_saveButton:Disable()
 		sdm_saveAsButton:Disable()
-		sdm_mainFrame_downgradeButton:Disable()
-		sdm_sendReceiveFrame_sendButton:Disable()
+		sdm_downgradeButton:Disable()
+		sdm_sendButton:Disable()
 		sdm_containerInstructions:Hide()
 	else
-		sdm_mainFrame_editScrollFrame_text:ClearFocus()
+		sdm_bodyBox:ClearFocus()
 		sdm_deleteButton:Enable()
 		sdm_changeIconButton:Enable()
 		if mTab.type=="c" then
-			sdm_mainFrame_editScrollFrame:Hide()
+			sdm_bodyScroller:Hide()
 			sdm_containerInstructions:Show()
 			sdm_usageButton:Disable()
 			sdm_saveAsButton:Disable()
-			sdm_sendReceiveFrame_sendButton:Disable()
+			sdm_sendButton:Disable()
 		else
 			if not sdm_sending then
-				sdm_sendReceiveFrame_sendButton:Enable()
+				sdm_sendButton:Enable()
 			end
-			sdm_mainFrame_editScrollFrame:Show()
+			sdm_bodyScroller:Show()
 			sdm_containerInstructions:Hide()
 			sdm_usageButton:Enable()
 			sdm_saveAsButton:Enable()
 			if mTab.type=="b" and sdm_UsedByThisChar(mTab) then
-				sdm_mainFrame_downgradeButton:Enable()
+				sdm_downgradeButton:Enable()
 			else
-				sdm_mainFrame_downgradeButton:Disable()
+				sdm_downgradeButton:Disable()
 			end
 		end
-		sdm_mainFrame_editScrollFrame_text:SetText(mTab.text or "")
+		sdm_bodyBox:SetText(mTab.text or "")
 		sdm_saveButton:Disable()
 	end
 	sdm_UpdateClaimDisownButtons()
@@ -237,18 +237,18 @@ end
 function sdm_UpdateClaimDisownButtons()
 	local mTab = sdm_macros[sdm_currentEdit]
 	if mTab and mTab.characters then
-		sdm_mainFrame_claimButton:Enable()
-		sdm_mainFrame_disownButton:Enable()
+		sdm_claimButton:Enable()
+		sdm_disownButton:Enable()
 	else
-		sdm_mainFrame_claimButton:Disable()
-		sdm_mainFrame_disownButton:Disable()
+		sdm_claimButton:Disable()
+		sdm_disownButton:Disable()
 	end
 	if sdm_UsedByThisChar(mTab) then
-		sdm_mainFrame_claimButton:Hide()
-		sdm_mainFrame_disownButton:Show()
+		sdm_claimButton:Hide()
+		sdm_disownButton:Show()
 	else
-		sdm_mainFrame_claimButton:Show()
-		sdm_mainFrame_disownButton:Hide()
+		sdm_claimButton:Show()
+		sdm_disownButton:Hide()
 	end
 end
 
@@ -383,7 +383,7 @@ function sdm_UpdateList()
 		listItem = table.remove(sdm_unusedListItems[isContainer],1)
 		if not listItem then
 			--create the listItem
-			listItem = CreateFrame("Button", CreateListItemFrameName(), sdm_mainFrame_macrosScroll_macroList)
+			listItem = CreateFrame("Button", CreateListItemFrameName(), sdm_macroList)
 			listItem.icon = listItem:CreateTexture(nil, "OVERLAY")
 			listItem.text = listItem:CreateFontString(nil,"ARTWORK","GameFontNormal")
 			listItem.text:SetJustifyH("LEFT")
@@ -758,17 +758,17 @@ function sdm_thawEditFrame()
 end
 
 function sdm_SaveConfirmationBox(postponed)
-	if (not sdm_currentEdit) or sdm_macros[sdm_currentEdit].type=="c" or sdm_macros[sdm_currentEdit].text==sdm_mainFrame_editScrollFrame_text:GetText() then
+	if (not sdm_currentEdit) or sdm_macros[sdm_currentEdit].type=="c" or sdm_macros[sdm_currentEdit].text==sdm_bodyBox:GetText() then
 		RunScript(postponed)
 	else
-		sdm_mainFrame_editScrollFrame_text:ClearFocus()
+		sdm_bodyBox:ClearFocus()
 		StaticPopupDialogs["SDM_CONFIRM"] = {
 			text = "Do you want to save your changes to "..sdm_currentTitle:GetText().."?",
 			button1 = "Save", --left button
 			button3 = "Don't Save", --middle button
 			button2 = "Cancel", -- right button
 			OnAccept = function() 
-				sdm_Edit(sdm_macros[sdm_currentEdit], sdm_mainFrame_editScrollFrame_text:GetText()) 
+				sdm_Edit(sdm_macros[sdm_currentEdit], sdm_bodyBox:GetText()) 
 				RunScript(postponed) 
 			end, --button1 (left)
 			OnAlt = function() 
@@ -805,7 +805,7 @@ function sdm_PickupMacro(ID)
 end
 
 function sdm_Quit(append)
-	local scriptOnQuit = "sdm_mainFrame:Hide() sdm_changeIconFrame:Hide() sdm_newFolderFrame:Hide()"
+	local scriptOnQuit = "sdm_mainFrame:Hide() sdm_changeIconFrame:Hide()"
 	if (not sdm_receiving) then
 		scriptOnQuit = scriptOnQuit.." sdm_newFrame:Hide()"
 		if (not sdm_sending) then
@@ -818,21 +818,66 @@ function sdm_Quit(append)
 	sdm_SaveConfirmationBox(scriptOnQuit)
 end
 
+function sdm_AddToRadioGroup(button, groupName)
+	sdm_radioGroups = sdm_radioGroups or {}
+	local group = sdm_radioGroups[groupName]
+	if not group then
+		sdm_radioGroups[groupName] = {}
+		group = sdm_radioGroups[groupName]
+	end
+	tinsert(group, button)
+	button.radioGroupName = groupName
+	button:SetScript("OnClick", sdm_RadioButtonClicked)
+end
+
+function sdm_RadioButtonClicked(button)
+	local group = sdm_radioGroups[button.radioGroupName]
+	for _,b in pairs(group) do
+		b:SetChecked(nil)
+	end
+	button:SetChecked(1)
+
+	if button.radioGroupName == "NewType" then
+		for _,b in pairs(sdm_radioGroups.NewChar) do
+			if button == sdm_folderRadio then
+				b:Hide()
+			else
+				b:Show()
+			end
+		end
+
+	elseif button.radioGroupName == "SendTo" then
+		if button == sdm_sendArbitraryRadio then
+			sdm_sendInput:SetFocus()
+		else
+			sdm_sendInput:ClearFocus()
+		end
+	elseif button.radioGroupName == "ReceiveFrom" then
+		if button == sdm_receiveArbitraryRadio then
+			sdm_receiveInput:SetFocus()
+		else
+			sdm_receiveInput:ClearFocus()
+		end
+	end
+end
+
 function sdm_CreateMacroButtonClicked()
 	local name = sdm_newMacroNameInput:GetText()
+	local character
+	if sdm_charspecRadio:GetChecked() then
+		character = sdm_thisChar
+	end
 
-	local type = nil
+	local type
 	if sdm_buttonRadio:GetChecked() then
 		type="b"
 	elseif sdm_floatingRadio:GetChecked() then
 		type="f"
 	elseif sdm_scriptRadio:GetChecked() then
 		type="s"
-	end
-
-	local character
-	if sdm_charspecRadio:GetChecked() then
-		character = sdm_thisChar
+	elseif sdm_folderRadio:GetChecked() then
+		type="c"
+		character = nil
 	end
 
 	if sdm_CheckCreationSafety(type, name, character) then
@@ -842,16 +887,7 @@ function sdm_CreateMacroButtonClicked()
 	end
 end
 
-function sdm_CreateFolderButtonClicked()
-	local name = sdm_newFolderNameInput:GetText()
-	if name=="" then
-		return
-	end
-	sdm_newFolderFrame:Hide()
-	sdm_CreateNew("c", name)
-	sdm_UpdateList()
-end
-
+-- When any non-button frame in a given group is opened, all buttons in that group are disabled.
 function sdm_AddToExclusiveGroup(f, group, isButton) --f is the frame, group is a key, button is a boolean that tells if it's a button or a window
 	sdm_exclusiveGroups = sdm_exclusiveGroups or {} --contains groups of mutually exclusive frames
 	if not sdm_exclusiveGroups[group] then
@@ -867,7 +903,7 @@ function sdm_AddToExclusiveGroup(f, group, isButton) --f is the frame, group is 
 	end
 end
 
-function sdm_ExclusiveWindowShown(f) --when a window in the group is shown, disable all buttons in the group.
+function sdm_ExclusiveWindowShown(f) --when a window in the group is shown, disable all buttons in the group, remembering which ones were disabled
 	local t = sdm_exclusiveGroups[f.exclusiveGroupKey]
 	t.isEnabled={}
 	for _,button in pairs(t.buttons) do
@@ -881,17 +917,21 @@ function sdm_ExclusiveWindowShown(f) --when a window in the group is shown, disa
 	end
 end
 
-function sdm_ExclusiveWindowHidden(f) --reenable the buttons.
+function sdm_ExclusiveWindowHidden(f) --reenable the buttons
 	local t = sdm_exclusiveGroups[f.exclusiveGroupKey]
-	for _,button in pairs(t.buttons) do
-		if t.isEnabled[button] then
-			button:Enable()
-		end
+	for button in pairs(t.isEnabled) do
+		button:Enable()
 	end
-	t.isEnabled=nil
 	if f.exclusiveGroupKey=="centerwindows" then
 		sdm_listLocked = false
 	end
+end
+
+function sdm_MakeDraggable(f)
+	f:EnableMouse(true)
+	f:RegisterForDrag("LeftButton")
+	f:SetScript("OnDragStart", sdm_StartMove)
+	f:SetScript("OnDragStop", sdm_StopMove)
 end
 
 function sdm_StartMove()
@@ -910,7 +950,7 @@ end
 
 function sdm_DefaultMacroFrameLoaded()
 	sdm_macroUILoaded=true
-	select(6, MacroFrame:GetRegions()):SetPoint("TOP",MacroFrame, "TOP", 76, -17) -- Move the text "Create Macros" 76 units to the right.
+	--select(6, MacroFrame:GetRegions()):SetPoint("TOP",MacroFrame, "TOP", 76, -17) -- Move the text "Create Macros" 76 units to the right.
 
 	sdm_CreateDefaultMacroFrameButtons()
 
@@ -959,7 +999,7 @@ else
 end
 sdm_unusedListItems={}
 sdm_listItems,sdm_unusedListItems[true],sdm_unusedListItems[false]={},{},{}
-sdm_listItemPrefix = "sdm_mainFrame_macrosScroll_macroList_listItem"
+sdm_listItemPrefix = "sdm_macroListItem"
 
 sdm_containerInstructionsString = [[
 Left-click on a folder to open or close it.

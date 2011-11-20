@@ -1,13 +1,60 @@
+sdm_msgPrefix = "SupDupMac"
+sdm_msgPrefixLength = string.len(sdm_msgPrefix)
+sdm_msgCommandLength = 1
+sdm_msgLengthLimit = 254
+sdm_msgCommands = {
+	SendFirst = "1", -- I'm sending you the first part of a macro
+	SendMore = "2", -- I'm sending you more of the macro
+	SendFailed = "3", -- I failed to send you the macro
+	Receiving = "4", -- I just received the first part of your macro
+	ReceivingDone = "5", -- I just saved the macro that you sent me
+	ReceivingFailed = "6", -- I failed to receive your macro
+}
+
+function sdm_OnUpdate(self, elapsed) --used for sending macros
+	self.TimeSinceLastUpdate = self.TimeSinceLastUpdate + elapsed
+	if self.TimeSinceLastUpdate > sdm_updateInterval then
+		if sdm_sending.i == 2 then
+			sdm_sending.command = sdm_msgCommands.SendMore
+		end
+		SendAddonMessage(sdm_msgPrefix, sdm_sending.command..sdm_sending.lines[sdm_sending.i], sdm_sending.channel, sdm_sending.target)
+		sdm_sendStatusBar:SetValue(sdm_sending.i)
+		sdm_sending.i = sdm_sending.i+1
+		if sdm_sending.i>sdm_sending.numLines then
+			sdm_EndSending("|cff44ff00Sent to "..(sdm_sending.target or sdm_sending.channel).."|r")
+		end
+		self.TimeSinceLastUpdate = 0
+	end
+end
+
+function sdm_RegisterMessages()
+	sdm_eventFrame:RegisterEvent("CHAT_MSG_ADDON")
+	local success = RegisterAddonMessagePrefix(sdm_msgPrefix)
+	if not success then
+		print(sdm_printPrefix.."You have too many addon prefixes registered. SDM will not be able to send or receive macros.")
+	end
+end
+
+-- create an invisible frame that is used to measure time
+local f = CreateFrame("Frame", "sdm_updateFrame", UIParent)
+f:Hide()
+f:SetScript("OnShow", function(self)
+	self.TimeSinceLastUpdate = 0
+end)
+f:SetScript("OnUpdate", sdm_OnUpdate)
+
 function sdm_SendMacro(mTab, chan, tar)
 	if sdm_sending then
 		print(sdm_printPrefix.."You are already sending something.")
 		return
 	end
+	print(sdm_printPrefix.."Sending to the following people (if nobody is listed, then nobody is waiting):")
+	sdm_RegisterMessages()
 	local perCharacter=nil
 	--make the string that will be split up and sent.  It consists of a bunch of values separated by commas.  They are, in order: the version the sender is running, the minimum version the receiver must have, the type of macro, the index of the icon, the perCharacter status ("<table value>" or "nil"), the length of the name, the length of the text, the name, and the text.  There is no comma between the name and the text.
 	local textToSend = sdm_version..","..sdm_minVersion..","..mTab.type..","..tostring(mTab.icon)..","..tostring(mTab.characters)..","..mTab.name:len()..","..mTab.text:len()..","..mTab.name..mTab.text
-	local pref = "SDM send1" -- if the prefix ends in "send1", it's the first line.  If it ends in "send2", it's any line after the first.
-	local lineLen = 254 - pref:len()
+	local comm = sdm_msgCommands.SendFirst -- if the command is SendFirst, it's the first part.  If it's SendMore, it's any part after the first.
+	local lineLen = sdm_msgLengthLimit - sdm_msgPrefixLength - sdm_msgCommandLength
 	local linesToSend={}
 	local pos = 1
 	while pos <= textToSend:len() do
@@ -20,54 +67,38 @@ function sdm_SendMacro(mTab, chan, tar)
 		numLines = getn(linesToSend),
 		channel = chan,
 		target = tar,
-		prefix = pref
+		command = comm
 	}
-	sdm_sendReceiveFrame_sendBar_statusBar:SetMinMaxValues(0, sdm_sending.numLines)
-	sdm_sendReceiveFrame_sendBar_statusBar:SetValue(0)
-	sdm_sendReceiveFrame_sendBar_statusBar_text:SetText("|cffffccffSending to "..(sdm_sending.target or sdm_sending.channel).."|r")
-	sdm_sendReceiveFrame_cancelSendButton:Enable()
-	sdm_sendReceiveFrame_sendButton:Disable()
-	sdm_sendReceiveFrame_sendPartyRadio:Disable()
-	sdm_sendReceiveFrame_sendRaidRadio:Disable()
-	sdm_sendReceiveFrame_sendBattlegroundRadio:Disable()
-	sdm_sendReceiveFrame_sendGuildRadio:Disable()
-	sdm_sendReceiveFrame_sendTargetRadio:Disable()
-	sdm_sendReceiveFrame_sendArbitraryRadio:Disable()
-	sdm_sendReceiveFrame_sendInput:EnableMouse(nil)
+	sdm_sendStatusBar:SetMinMaxValues(0, sdm_sending.numLines)
+	sdm_sendStatusBar:SetValue(0)
+	sdm_sendStatusBar_text:SetText("|cffffccffSending to "..(sdm_sending.target or sdm_sending.channel).."|r")
+	sdm_cancelSendButton:Enable()
+	sdm_sendButton:Disable()
+	sdm_sendPartyRadio:Disable()
+	sdm_sendRaidRadio:Disable()
+	sdm_sendBattlegroundRadio:Disable()
+	sdm_sendGuildRadio:Disable()
+	sdm_sendTargetRadio:Disable()
+	sdm_sendArbitraryRadio:Disable()
+	sdm_sendInput:EnableMouse(nil)
 	sdm_updateFrame:Show()
-end
-
-function sdm_OnUpdate(self, elapsed) --used for sending macros
-	self.TimeSinceLastUpdate = self.TimeSinceLastUpdate + elapsed
-	if self.TimeSinceLastUpdate > sdm_updateInterval then
-		if sdm_sending.i == 2 then
-			sdm_sending.prefix="SDM send2"
-		end
-		SendAddonMessage(sdm_sending.prefix, sdm_sending.lines[sdm_sending.i], sdm_sending.channel, sdm_sending.target)
-		sdm_sendReceiveFrame_sendBar_statusBar:SetValue(sdm_sending.i)
-		sdm_sending.i = sdm_sending.i+1
-		if sdm_sending.i>sdm_sending.numLines then
-			sdm_EndSending("|cff44ff00Sent to "..(sdm_sending.target or sdm_sending.channel).."|r")
-		end
-		self.TimeSinceLastUpdate = 0
-	end
 end
 
 function sdm_EndSending(text)
 	sdm_updateFrame:Hide()
-	sdm_sendReceiveFrame_sendBar_statusBar_text:SetText(text)
+	sdm_sendStatusBar_text:SetText(text)
 	sdm_sending=nil
-	sdm_sendReceiveFrame_cancelSendButton:Disable()
+	sdm_cancelSendButton:Disable()
 	if sdm_currentEdit then
-		sdm_sendReceiveFrame_sendButton:Enable()
+		sdm_sendButton:Enable()
 	end
-	sdm_sendReceiveFrame_sendPartyRadio:Enable()
-	sdm_sendReceiveFrame_sendRaidRadio:Enable()
-	sdm_sendReceiveFrame_sendBattlegroundRadio:Enable()
-	sdm_sendReceiveFrame_sendGuildRadio:Enable()
-	sdm_sendReceiveFrame_sendTargetRadio:Enable()
-	sdm_sendReceiveFrame_sendArbitraryRadio:Enable()
-	sdm_sendReceiveFrame_sendInput:EnableMouse(1)
+	sdm_sendPartyRadio:Enable()
+	sdm_sendRaidRadio:Enable()
+	sdm_sendBattlegroundRadio:Enable()
+	sdm_sendGuildRadio:Enable()
+	sdm_sendTargetRadio:Enable()
+	sdm_sendArbitraryRadio:Enable()
+	sdm_sendInput:EnableMouse(1)
 end
 
 function sdm_WaitForMacro(name)
@@ -75,14 +106,16 @@ function sdm_WaitForMacro(name)
 		print(sdm_printPrefix.."You are already receiving or waiting.")
 		return
 	end
+	sdm_RegisterMessages()
 	sdm_receiving = {playerName=name, first=true}
-	sdm_sendReceiveFrame_receiveBar_statusBar:SetValue(0)
-	sdm_sendReceiveFrame_receiveBar_statusBar_text:SetText("|cffffccffWaiting for "..sdm_receiving.playerName.."|r")
-	sdm_sendReceiveFrame_cancelReceiveButton:Enable()
-	sdm_sendReceiveFrame_receiveButton:Disable()
-	sdm_sendReceiveFrame_receiveTargetRadio:Disable()
-	sdm_sendReceiveFrame_receiveArbitraryRadio:Disable()
-	sdm_sendReceiveFrame_receiveInput:EnableMouse(nil)
+	sdm_receiveStatusBar:SetValue(0)
+	sdm_receiveStatusBar_text:SetText("|cffffccffWaiting for "..sdm_receiving.playerName.."|r")
+	sdm_cancelReceiveButton:Enable()
+	sdm_receiveButton:Disable()
+	sdm_receiveTargetRadio:Disable()
+	sdm_receiveArbitraryRadio:Disable()
+	sdm_receiveAnyoneRadio:Disable()
+	sdm_receiveInput:EnableMouse(nil)
 	sdm_SelectItem(nil)
 	sdm_newFrame:Show()
 	sdm_newMacroNameInput:ClearFocus()
@@ -99,31 +132,42 @@ function sdm_WaitForMacro(name)
 end
 
 function sdm_InterpretAddonMessage(...)
-	local arg1, arg2, arg3, arg4 = ...
-	if arg4~=sdm_thisChar.name and arg1:sub(1,17)=="SDM" then
-		local txt=arg1:sub(18)
-		if sdm_receiving and arg4:upper()==sdm_receiving.playerName:upper() and (not sdm_receiving.text) then
-			if txt==" send1" then
-				sdm_ReceiveLine(arg2, true)
-			elseif txt==" send2" then
-				sdm_ReceiveLine(arg2, false)
-			elseif txt==" sendFailed" then
-				print(sdm_printPrefix..""..arg4.." failed to send the macro.  Reason: "..arg2)
-				sdm_EndReceiving("|cffff0000Failed|r")
-			end
-		elseif txt==" receiving" then
-			print(sdm_printPrefix.."Sending macro to "..arg4.."...")
-		elseif txt==" recDone" then
-			print(sdm_printPrefix..""..arg4.." has accepted your macro.")
-		elseif txt==" recFailed" then --"SDM recFailed","reason,version"
-			local version, reason = sdm_SplitString(arg2, ",", 1)
-			print(sdm_printPrefix..""..arg4.." did not receive your macro.  Reason: "..reason)
+	--print("debug: interpreting")
+	local prefix, message, _, sender = ...
+	if prefix ~= sdm_msgPrefix or sender==sdm_thisChar.name then
+		return
+	end
+	local command = message:sub(1,1)
+	local txt=message:sub(2)
+	if sdm_receiving and not sdm_receiving.text then
+		if sdm_receiving.playerName == "<ANYONE>" and command == sdm_msgCommands.SendFirst then
+			sdm_receiving.playerName = sender
 		end
+		if sender:upper() ~= sdm_receiving.playerName:upper() then
+			return
+		end
+		if command == sdm_msgCommands.SendFirst then -- this is the first part of the macro (also contains data such as name and type)
+			sdm_ReceiveLine(txt, true)
+		elseif command == sdm_msgCommands.SendMore then -- this is some part other than the first
+			sdm_ReceiveLine(txt, false)
+		elseif command == sdm_msgCommands.SendFailed then -- this is a reason why the sender failed to send us the macro
+			print(sdm_printPrefix..sender.." failed to send the macro.  Reason: "..txt)
+			sdm_EndReceiving("|cffff0000Failed|r")
+		end
+	elseif command == sdm_msgCommands.Receiving then
+		print(sdm_printPrefix..sender.." has begun to receive your macro...")
+	elseif command == sdm_msgCommands.ReceivingDone then -- the target has finished receiving
+		print(sdm_printPrefix..sender.." has accepted your macro.")
+	elseif command == sdm_msgCommands.ReceivingFailed then -- this is a reason why the recipient failed to receive our macro
+		local version, reason = sdm_SplitString(txt, ",", 1)
+		print(sdm_printPrefix..sender.." did not receive your macro.  Reason: "..reason)
 	end
 end
 
 function sdm_ReceiveLine(line, send1)
+	--print("debug: in recline")
 	if sdm_receiving.first and send1 then --this is the first line
+		--print("debug: is firstline")
 		sdm_receiving.nameAndText, sdm_receiving.textLen, sdm_receiving.playerNameLen, sdm_receiving.perCharacter, sdm_receiving.icon, sdm_receiving.type, sdm_receiving.minVersion, sdm_receiving.sendersVersion = sdm_SplitString(line, ",", 7)
 		sdm_receiving.perCharacter = (sdm_receiving.perCharacter~="nil")
 		if sdm_receiving.icon=="nil" then
@@ -134,15 +178,15 @@ function sdm_ReceiveLine(line, send1)
 		sdm_receiving.textLen = 0 + sdm_receiving.textLen
 		sdm_receiving.playerNameLen = 0 + sdm_receiving.playerNameLen
 		sdm_receiving.first = false
-		sdm_sendReceiveFrame_receiveBar_statusBar:SetMinMaxValues(0, sdm_receiving.playerNameLen + sdm_receiving.textLen)
-		sdm_sendReceiveFrame_receiveBar_statusBar_text:SetText("|cffffccffReceiving|r")
+		sdm_receiveStatusBar:SetMinMaxValues(0, sdm_receiving.playerNameLen + sdm_receiving.textLen)
+		sdm_receiveStatusBar_text:SetText("|cffffccffReceiving|r")
 		if sdm_CompareVersions(sdm_receiving.sendersVersion, sdm_minVersion)==2 or sdm_CompareVersions(sdm_version, sdm_receiving.minVersion)==2 then
 			print(sdm_printPrefix.."You failed to recieve the macro due to a version incompatibility.")
-			SendAddonMessage("SDM recFailed", "Incompatible Versions,"..sdm_version, "WHISPER", sdm_receiving.playerName)
+			SendAddonMessage(sdm_msgPrefix, sdm_msgCommands.ReceivingFailed.."Incompatible Versions,"..sdm_version, "WHISPER", sdm_receiving.playerName)
 			sdm_EndReceiving("|cffff0000Failed|r")
 			return
 		else
-			SendAddonMessage("SDM receiving", sdm_version, "WHISPER", sdm_receiving.playerName)
+			SendAddonMessage(sdm_msgPrefix, sdm_msgCommands.Receiving..sdm_version, "WHISPER", sdm_receiving.playerName)
 		end
 	elseif (not sdm_receiving.first) and (not send1) then
 		sdm_receiving.nameAndText = sdm_receiving.nameAndText..line
@@ -150,9 +194,9 @@ function sdm_ReceiveLine(line, send1)
 		return
 	end
 	local currLen = sdm_receiving.nameAndText:len()
-	sdm_sendReceiveFrame_receiveBar_statusBar:SetValue(currLen)
+	sdm_receiveStatusBar:SetValue(currLen)
 	if currLen == (sdm_receiving.playerNameLen + sdm_receiving.textLen) then
-		sdm_sendReceiveFrame_receiveBar_statusBar_text:SetText("|cffff9900Click \"Create\" to save|r")
+		sdm_receiveStatusBar_text:SetText("|cffff9900Click \"Create\" to save|r")
 		UIFrameFlash(sdm_createMacroButton_flash, 0.5, 0.5, 1e6, false)
 		sdm_newMacroNameInput:EnableMouse(1)
 		sdm_buttonRadio:Enable()
@@ -180,13 +224,14 @@ function sdm_ReceiveLine(line, send1)
 end
 
 function sdm_EndReceiving(text)
-	sdm_sendReceiveFrame_receiveBar_statusBar_text:SetText(text)
-	sdm_sendReceiveFrame_cancelReceiveButton:Disable()
-	sdm_sendReceiveFrame_receiveButton:Enable()
+	sdm_receiveStatusBar_text:SetText(text)
+	sdm_cancelReceiveButton:Disable()
+	sdm_receiveButton:Enable()
 	sdm_newButton:Enable()
-	sdm_sendReceiveFrame_receiveTargetRadio:Enable()
-	sdm_sendReceiveFrame_receiveArbitraryRadio:Enable()
-	sdm_sendReceiveFrame_receiveInput:EnableMouse(1)
+	sdm_receiveTargetRadio:Enable()
+	sdm_receiveArbitraryRadio:Enable()
+	sdm_receiveAnyoneRadio:Enable()
+	sdm_receiveInput:EnableMouse(1)
 	sdm_newMacroNameInput:SetText("")
 	sdm_newMacroNameInput:EnableMouse(1)
 	sdm_buttonRadio:Enable()
@@ -199,12 +244,14 @@ function sdm_EndReceiving(text)
 end
 
 function sdm_CancelSend()
-	SendAddonMessage("SDM sendFailed", "Cancelled", sdm_sending.channel, sdm_sending.target)
+	SendAddonMessage(sdm_msgPrefix, sdm_msgCommands.SendFailed.."Cancelled", sdm_sending.channel, sdm_sending.target)
 	sdm_EndSending("|cffff0000Cancelled|r")
 end
 
 function sdm_CancelReceive()
-	SendAddonMessage("SDM recFailed", "Cancelled,"..sdm_version, "WHISPER", sdm_receiving.playerName)
+	if sdm_receiving.playerName~="<ANYONE>" then
+		SendAddonMessage(sdm_msgPrefix, sdm_msgCommands.ReceivingFailed.."Cancelled,"..sdm_version, "WHISPER", sdm_receiving.playerName)
+	end
 	sdm_EndReceiving("|cffff0000Cancelled|r")
 	sdm_newFrame:Hide()
 end
@@ -223,51 +270,53 @@ end
 function sdm_SendButtonClicked()
 	local channel
 	local target
-	if sdm_sendReceiveFrame_sendPartyRadio:GetChecked() then
+	if sdm_sendPartyRadio:GetChecked() then
 		channel="PARTY"
-	elseif sdm_sendReceiveFrame_sendRaidRadio:GetChecked() then
+	elseif sdm_sendRaidRadio:GetChecked() then
 		channel="RAID"
-	elseif sdm_sendReceiveFrame_sendBattlegroundRadio:GetChecked() then
+	elseif sdm_sendBattlegroundRadio:GetChecked() then
 		channel="BATTLEGROUND"
-	elseif sdm_sendReceiveFrame_sendGuildRadio:GetChecked() then
+	elseif sdm_sendGuildRadio:GetChecked() then
 		channel="GUILD"
-	elseif sdm_sendReceiveFrame_sendTargetRadio:GetChecked() then
+	elseif sdm_sendTargetRadio:GetChecked() then
 		channel="WHISPER"
 		if UnitIsPlayer("target") then
 			target, realm = UnitName("target")
-			if realm then
+			if realm and realm~="" then
 				target = target.."-"..realm
 			end
 		end
-	elseif sdm_sendReceiveFrame_sendArbitraryRadio:GetChecked() then
+	elseif sdm_sendArbitraryRadio:GetChecked() then
 		channel="WHISPER"
-		target=sdm_sendReceiveFrame_sendInput:GetText()
+		target=sdm_sendInput:GetText()
 	end
 	if channel=="WHISPER" and ((not target) or target=="" or target==sdm_thisChar.name) then
 		return
 	end
-	sdm_sendReceiveFrame_sendInput:ClearFocus()
+	sdm_sendInput:ClearFocus()
 	sdm_SendMacro(sdm_macros[sdm_currentEdit], channel, target)
 end
 
 function sdm_ReceiveButtonClicked()
 	local sender
-	if sdm_sendReceiveFrame_receiveTargetRadio:GetChecked() then
+	if sdm_receiveTargetRadio:GetChecked() then
 		if UnitIsPlayer("target") then
 			sender, realm = UnitName("target")
-			if realm then
+			if realm and realm~="" then
 				sender = sender.."-"..realm
 			end
 		end
-	elseif sdm_sendReceiveFrame_receiveArbitraryRadio:GetChecked() then
-		sender=sdm_sendReceiveFrame_receiveInput:GetText()
+	elseif sdm_receiveArbitraryRadio:GetChecked() then
+		sender=sdm_receiveInput:GetText()
+	elseif sdm_receiveAnyoneRadio:GetChecked() then
+		sender = "<ANYONE>"
 	end
 	if ((not sender) or sender=="" or sender==sdm_thisChar.name) then return end
-	sdm_sendReceiveFrame_receiveInput:ClearFocus()
+	sdm_receiveInput:ClearFocus()
 	sdm_SaveConfirmationBox("sdm_WaitForMacro("..sdm_Stringer(sender)..")")
 end
 
 sdm_sending=nil --info about the macro you're trying to send
 sdm_receiving=nil --info about the macro you're receiving (or waiting to receive)
 sdm_updateInterval=0.25 --can be as low as 0.01 and still work, but it might disconnect you if there are other addons sending out messages too.  0.25 is slower but safer.
-sdm_minVersion="1.6" --the oldest version that is compatible with this one for exchanging macros
+sdm_minVersion="2.4" --the oldest version that is compatible with this one for exchanging macros

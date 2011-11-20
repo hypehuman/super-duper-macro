@@ -23,11 +23,11 @@ SLASH_SUPERDUPERMACRO1 = "/sdm";
 sdm_eventFrame = CreateFrame("Frame")
 sdm_eventFrame:RegisterEvent("VARIABLES_LOADED")
 sdm_eventFrame:RegisterEvent("UPDATE_MACROS")
-sdm_eventFrame:RegisterEvent("CHAT_MSG_ADDON")
 sdm_eventFrame:SetScript("OnEvent", function (self, event, ...)
 	if event=="VARIABLES_LOADED" then
 		local oldVersion = sdm_version
 		sdm_version=GetAddOnMetadata("SuperDuperMacro", "Version") --the version of this addon
+		sdm_mainFrameTitle:SetText("Super Duper Macro "..sdm_version)
 		sdm_eventFrame:UnregisterEvent(event)
 		if (not sdm_macros) then
 			sdm_macros={} --type tokens: "b": button macro.  "f": floating macro.  "s": scripts.  "c": containers (folders)
@@ -66,44 +66,47 @@ sdm_eventFrame:SetScript("OnEvent", function (self, event, ...)
 			sdm_listFilters["true"]=true
 			sdm_listFilters["false"]=true
 		end
-		sdm_mainFrame_iconSizeSlider:SetValue(sdm_iconSize)
-		sdm_mainFrame_iconSizeSlider:SetScript("OnValueChanged", function(self) sdm_iconSize = self:GetValue() sdm_UpdateList() end)
+		sdm_iconSizeSlider:SetValue(sdm_iconSize)
+		sdm_iconSizeSlider:SetScript("OnValueChanged", function(self) sdm_iconSize = self:GetValue() sdm_UpdateList() end)
 		sdm_SelectItem(nil) --We want to start with no macro selected
 	elseif event=="UPDATE_MACROS" then
-		sdm_countUpdateMacrosEvents=sdm_countUpdateMacrosEvents+1
-		if sdm_countUpdateMacrosEvents==2 then
-			sdm_eventFrame:UnregisterEvent(event)
-			local killOnSight = {}
-			local macrosToDelete = {}
-			local iIsPerCharacter=false
-			local thisID, mTab
-			for i=1,54 do --Check each macro to see if it's been orphaned by a previous installation of SDM.
-				if i==37 then iIsPerCharacter=true end
-				thisID = sdm_GetSdmID(i)
-				mTab = sdm_macros[thisID]
-				if thisID then --if the macro was created by SDM...
-					if killOnSight[thisID] then --if this ID is marked as kill-on-sight, kill it.
-						table.insert(macrosToDelete, i)
-					elseif (not mTab) or mTab.type~="b" or (not sdm_UsedByThisChar(mTab)) then --if this ID is not in use by this character as a button macro, kill it and mark this ID as KoS
-						table.insert(macrosToDelete, i)
-						killOnSight[thisID]=1
-					elseif (mTab.characters~=nil)~=iIsPerCharacter then --if the macro is in the wrong spot based on perCharacter, kill it, but give it a chance to find one in the right spot.
-						table.insert(macrosToDelete, i)
-					else --This macro is good and should be here.  Kill any duplicates.
-						killOnSight[thisID]=1
+		if sdm_countUpdateMacrosEvents < 2 then
+			sdm_countUpdateMacrosEvents=sdm_countUpdateMacrosEvents+1
+			if sdm_countUpdateMacrosEvents==2 then
+				local killOnSight = {}
+				local macrosToDelete = {}
+				local iIsPerCharacter=false
+				local thisID, mTab
+				for i=1,54 do --Check each macro to see if it's been orphaned by a previous installation of SDM.
+					if i==37 then iIsPerCharacter=true end
+					thisID = sdm_GetSdmID(i)
+					mTab = sdm_macros[thisID]
+					if thisID then --if the macro was created by SDM...
+						if killOnSight[thisID] then --if this ID is marked as kill-on-sight, kill it.
+							table.insert(macrosToDelete, i)
+						elseif (not mTab) or mTab.type~="b" or (not sdm_UsedByThisChar(mTab)) then --if this ID is not in use by this character as a button macro, kill it and mark this ID as KoS
+							table.insert(macrosToDelete, i)
+							killOnSight[thisID]=1
+						elseif (mTab.characters~=nil)~=iIsPerCharacter then --if the macro is in the wrong spot based on perCharacter, kill it, but give it a chance to find one in the right spot.
+							table.insert(macrosToDelete, i)
+						else --This macro is good and should be here.  Kill any duplicates.
+							killOnSight[thisID]=1
+						end
+					end
+				end
+				for i=getn(macrosToDelete),1,-1 do -- we delete in descending order so that the indices don't get messed up while we're deleting, which would cause us to delete the wrong macros
+					print(sdm_printPrefix.."Deleting extraneous macro "..macrosToDelete[i]..": "..GetMacroInfo(macrosToDelete[i]))
+					DeleteMacro(macrosToDelete[i])
+				end
+				for i,v in pairs(sdm_macros) do
+					if sdm_UsedByThisChar(sdm_macros[i]) then
+						sdm_SetUpMacro(sdm_macros[i])
 					end
 				end
 			end
-			for i=getn(macrosToDelete),1,-1 do -- we delete in descending order so that the indices don't get messed up while we're deleting, which would cause us to delete the wrong macros
-				print(sdm_printPrefix.."Deleting extraneous macro "..macrosToDelete[i]..": "..GetMacroInfo(macrosToDelete[i]))
-				DeleteMacro(macrosToDelete[i])
-			end
-			for i,v in pairs(sdm_macros) do
-				if sdm_UsedByThisChar(sdm_macros[i]) then
-					sdm_SetUpMacro(sdm_macros[i])
-				end
-			end
 		end
+		local numAccountMacros, numCharacterMacros = GetNumMacros()
+		sdm_macroLimitText:SetText("Global macros: "..numAccountMacros.."/36\nCharacter-specific macros: "..numCharacterMacros.."/18")
 	elseif event=="ADDON_LOADED" then
 		local addonName = ...;
 		if addonName=="Blizzard_MacroUI" then
@@ -118,7 +121,10 @@ sdm_eventFrame:SetScript("OnEvent", function (self, event, ...)
 		sdm_doAfterCombat={}
 		print(sdm_printPrefix.."Your macros are now up to date.")
 	elseif event=="CHAT_MSG_ADDON" then
-		sdm_InterpretAddonMessage(...)
+		--print("debug:", event, ...)
+		if ... == sdm_msgPrefix then
+			sdm_InterpretAddonMessage(...)
+		end
 	end
 end)
 
@@ -303,7 +309,9 @@ function sdm_CheckCreationSafety(type, name, character) --returns the mTab of th
 		print(sdm_printPrefix.."Invalid name")
 		return false
 	end
-	if (type=="b" or type=="f") and sdm_ContainsIllegalChars(name, true) then
+	if type=="c" then
+		return true
+	elseif (type=="b" or type=="f") and sdm_ContainsIllegalChars(name, true) then
 		return false
 	end
 	if (not character) and GetMacroInfo(36) then
@@ -345,7 +353,7 @@ function sdm_CreateNew(type, name, character) --returns the mTab of the new macr
 		if sdm_receiving and sdm_receiving.text then
 			mTab.text=sdm_receiving.text
 			mTab.icon=sdm_receiving.icon
-			SendAddonMessage("SDM recDone", "", "WHISPER", sdm_receiving.playerName)
+			SendAddonMessage(sdm_msgPrefix, sdm_msgCommands.ReceivingDone, "WHISPER", sdm_receiving.playerName) -- let the sender know that we've saved the macro
 			sdm_EndReceiving("|cff44ff00Saved|r")
 		elseif sdm_saveAsText then
 			mTab.text = sdm_saveAsText
