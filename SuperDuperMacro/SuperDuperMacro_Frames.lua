@@ -346,7 +346,7 @@ f:SetBackdrop({
 	}
 })
 f:SetScript("OnShow", function(self)
-	sdm_OnShow_changeIconFrame(self, sdm_macros[sdm_currentEdit])
+	sdm_OnShow_changeIconFrame(self)
 end)
 f:SetScript("OnHide", function(self)
 	sdm_OnHide_changeIconFrame(self)

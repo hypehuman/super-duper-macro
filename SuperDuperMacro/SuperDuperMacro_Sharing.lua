@@ -167,13 +167,12 @@ end
 function sdm_ReceiveLine(line, send1)
 	--print("debug: in recline")
 	if sdm_receiving.first and send1 then --this is the first line
-		--print("debug: is firstline")
 		sdm_receiving.nameAndText, sdm_receiving.textLen, sdm_receiving.playerNameLen, sdm_receiving.perCharacter, sdm_receiving.icon, sdm_receiving.type, sdm_receiving.minVersion, sdm_receiving.sendersVersion = sdm_SplitString(line, ",", 7)
 		sdm_receiving.perCharacter = (sdm_receiving.perCharacter~="nil")
 		if sdm_receiving.icon=="nil" then
 			sdm_receiving.icon = nil
 		else
-			sdm_receiving.icon = 0 + sdm_receiving.icon
+			sdm_receiving.icon = sdm_receiving.icon
 		end
 		sdm_receiving.textLen = 0 + sdm_receiving.textLen
 		sdm_receiving.playerNameLen = 0 + sdm_receiving.playerNameLen

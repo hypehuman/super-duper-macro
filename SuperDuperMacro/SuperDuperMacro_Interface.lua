@@ -427,18 +427,16 @@ function sdm_UpdateList()
 			end
 			sdm_SetTooltip(listItem, "Alt-click for folder options and instructions")
 		else
-			if mTab.icon==1 then
-				if mTab.type=="b" and sdm_UsedByThisChar(mTab) then
-					_,texture = GetMacroInfo(sdm_GetMacroIndex(mTab.ID))
-				else
-					texture = nil
-				end
+			if mTab.icon:upper() == sdm_defaultIcon and mTab.type=="b" and (sdm_UsedByThisChar(mTab)) then
+				_,texture = GetMacroInfo(sdm_GetMacroIndex(mTab.ID))
 			else
-				texture = GetMacroIconInfo(mTab.icon)
+				texture = "INTERFACE\\ICONS\\"..mTab.icon
 			end
-			listItem.icon:SetTexture(texture)
-			listItem.icon:SetWidth(sdm_iconSize)
-			listItem.icon:SetHeight(sdm_iconSize)
+			if texture then
+				listItem.icon:SetTexture(texture)
+				listItem.icon:SetWidth(sdm_iconSize)
+				listItem.icon:SetHeight(sdm_iconSize)
+			end
 			listItem.slotIcon:SetWidth(sdm_iconSize*64/36)
 			listItem.slotIcon:SetHeight(sdm_iconSize*64/36)
 			if mTab.type=="b" and sdm_UsedByThisChar(mTab) then
@@ -603,11 +601,14 @@ function sdm_GetColor(type, plainString)--if inputString is passed, it will retu
 end
 
 function sdm_OnShow_changeIconFrame(f)
-	local mTab = sdm_macros[sdm_currentEdit]
 	if not sdm_macroUILoaded then
 		MacroFrame_LoadUI()
+		MacroPopupFrame:Show()
+	else
+		RefreshPlayerSpellIconInfo() -- You gotta do this, or there will be lots of errors!
 	end
-	MacroPopupFrame.selectedIcon=mTab.icon
+	local mTab = sdm_macros[sdm_currentEdit]
+	-- NYI: here would be a good place to select the current icon and scroll to that place in the list
 	f.prevonshow=MacroPopupFrame:GetScript("OnShow")
 	MacroPopupFrame:SetScript("OnShow", MacroPopupFrame_Update)
 	f.prevonenter=MacroPopupEditBox:GetScript("OnEnterPressed")
@@ -623,8 +624,8 @@ function sdm_OnShow_changeIconFrame(f)
 		f.prevpoints[i]={MacroPopupFrame:GetPoint(i)}
 	end
 	MacroPopupFrame:ClearAllPoints()
-	MacroPopupFrame:SetParent(f)
-	MacroPopupFrame:SetPoint("BOTTOM")
+	--MacroPopupFrame:SetParent(f)
+	MacroPopupFrame:SetPoint("BOTTOM", f)
 	MacroPopupFrame:Show()
 	_,_,_,_,f.fontstring = MacroPopupFrame:GetRegions()
 	f.fontstring:SetText("        Different name on button:")
@@ -656,7 +657,7 @@ function sdm_OnHide_changeIconFrame(f)
 	MacroPopupEditBox:SetAutoFocus(true)
 	MacroPopupFrame.mode=f.prevmode
 	MacroPopupFrame:ClearAllPoints()
-	MacroPopupFrame:SetParent(UIParent)
+	--MacroPopupFrame:SetParent(UIParent)
 	for _,point in ipairs(f.prevpoints) do
 		MacroPopupFrame:SetPoint(point[1], point[2], point[3], point[4], point[5])
 	end
@@ -671,10 +672,14 @@ function sdm_OnHide_changeIconFrame(f)
 	MacroPopupFrame_buttonTextCheckBox:Hide()
 end
 
+function sdm_GetSelectedIcon()
+	return GetSpellorMacroIconInfo(MacroPopupFrame.selectedIcon)
+end
+
 function sdm_ChangeIconOkayed()
 	local mTab = sdm_macros[sdm_currentEdit]
 	local nameInputted = sdm_changeNameInput:GetText()
-	local iconInputted = MacroPopupFrame.selectedIcon
+	local iconInputted = sdm_GetSelectedIcon()
 	if (not nameInputted) or nameInputted=="" or (mTab.type~="c" and not iconInputted) then
 		return
 	end

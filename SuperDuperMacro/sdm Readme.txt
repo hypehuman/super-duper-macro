@@ -1,5 +1,5 @@
 Super Duper Macro
-version 2.4
+version 2.4.1
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -24,6 +24,9 @@ Special thanks to:
 
 
 Change Log
+
+2.4.1 (11/30/11)
+¥ÊUpdated for version 4.0 - you will lose any custom icons for your macros.  Sorry!
 
 2.4 (11/20/11)
 ¥ÊFixed the Send/Receive feature; now you can share macros with your friends again, as long as you are both using the latest version.

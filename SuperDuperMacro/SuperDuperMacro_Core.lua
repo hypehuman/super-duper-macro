@@ -1,4 +1,5 @@
 sdm_printPrefix = "|cffff7700Super Duper Macro|r - "
+sdm_defaultIcon = "INV_MISC_QUESTIONMARK"
 sdm_countUpdateMacrosEvents=0
 sdm_validChars = {1,2,3,4,5,6,7,8,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255}
 sdm_thisChar = {name=UnitName("player"), realm=GetRealmName()}
@@ -31,23 +32,32 @@ sdm_eventFrame:SetScript("OnEvent", function (self, event, ...)
 		sdm_eventFrame:UnregisterEvent(event)
 		if (not sdm_macros) then
 			sdm_macros={} --type tokens: "b": button macro.  "f": floating macro.  "s": scripts.  "c": containers (folders)
-		elseif sdm_CompareVersions(oldVersion,"2.2")==2 then
+		end
+		-- when updating versions, make sure that the saved data are appropriately updated.
+		if sdm_CompareVersions(oldVersion, sdm_version) == 2 then
+			if sdm_CompareVersions(oldVersion,"1.6")==2 then -- Hopefully nobody is upgrading from a version this old.  If they are, they should download 2.1 and run that once before upgrading to 2.2.
+				sdm_macros={}
+			end
 			if sdm_CompareVersions(oldVersion,"1.6.1")==2 then
-				if sdm_CompareVersions(oldVersion,"1.6")==2 then -- Hopefully nobody is upgrading from a version this old.  If they are, they should download 2.1 and run that once before upgrading to 2.2.
-					sdm_macros={}
-				end
-				--when updating from before 1.6.1:
 				for i,v in pairs(sdm_macros) do
 					if v.buttonName=="" then
 						v.buttonName=" "
 					end
 				end
 			end
-			--when updating from before 2.2:
-			for i,v in pairs(sdm_macros) do
-				if v.character then
-					v.characters = {v.character}
-					v.character = nil
+			if sdm_CompareVersions(oldVersion,"2.2")==2 then
+				for i,v in pairs(sdm_macros) do
+					if v.character then
+						v.characters = {v.character}
+						v.character = nil
+					end
+				end
+			end
+			if sdm_CompareVersions(oldVersion,"2.4.1")==2 then
+				for _,v in pairs(sdm_macros) do
+					if v.icon then
+						v.icon = sdm_defaultIcon
+					end
 				end
 			end
 		end
@@ -349,7 +359,7 @@ function sdm_CreateNew(type, name, character) --returns the mTab of the new macr
 		mTab.open = true
 		mTab.contents = {}
 	else
-		mTab.icon=1
+		mTab.icon = sdm_defaultIcon
 		if sdm_receiving and sdm_receiving.text then
 			mTab.text=sdm_receiving.text
 			mTab.icon=sdm_receiving.icon
@@ -395,15 +405,10 @@ function sdm_UpgradeMacro(index) -- Upgrades the given standard macro to a Super
 	local body = GetMacroBody(index)
 	EditMacro(index, nil, nil, "#sdm"..sdm_numToChars(sdm_GetEmptySlot()).."\n#placeholder") -- let SDM know that this is the macro to edit
 	local _, texture = GetMacroInfo(index) -- This must be done AFTER the macro body is edited, or the question mark could show up as something else.
-	local iconIndex = 1
-	for iii = 1,GetNumMacroIcons() do
-		if GetMacroIconInfo(iii) == texture then
-			iconIndex = iii
-			break
-		end
-	end
+	texture = texture:sub(17) -- remove the "INTERFACE\\ICONS\\"
+	print(texture)
 	local newMacro = sdm_CreateNew("b", name, character)
-	newMacro.icon = iconIndex
+	newMacro.icon = texture
 	sdm_Edit(newMacro, body)
 	return newMacro
 end
