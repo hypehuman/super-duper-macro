@@ -1,5 +1,5 @@
 Super Duper Macro
-version 2.4.2
+version 2.4.3
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -17,13 +17,14 @@ Suggestions and bug reports are always welcome.  You can post comments on the wo
 
 Special thanks to:
 ¥ SuperMacro, which inspired the idea for this addon.
-¥ Behaviors, from which I shamelessly copied many UI elements.
 ¥ÊAll the regulars on the UI & Macro forums, who have been guiding me through this process.
-¥ survivorx and ambro, who patched this addon while I was AWOL
 
 
 
 Change Log
+
+2.4.3 (11/30/11)
+¥ÊRe-enabled the text that shows how many more button macros you can create
 
 2.4.2 (11/30/11)
 ¥ÊFixed a minor error that occurs when running SDM for the first time

@@ -82,7 +82,7 @@ sdm_eventFrame:SetScript("OnEvent", function (self, event, ...)
 		-- SDM uses this event for two things.  Whenever you log into the game, UPDATE_MACROS is fired twice.  After the second firing, the macros are loaded.  This is when SDM deletes extraneous macros that it has created before.  This generally happens if you use different computers or if you don't use SDM for a while.  Whenever you log in, SDM makes sure that your macro list jives with the info in SavedVariables.
 		if sdm_countUpdateMacrosEvents == 0 then
 			sdm_countUpdateMacrosEvents = 1
-		elseif sdm_countUpdateMacrosEvents==1 then
+		elseif sdm_countUpdateMacrosEvents == 1 then
 			sdm_countUpdateMacrosEvents = 2
 			local killOnSight = {}
 			local macrosToDelete = {}
@@ -115,7 +115,7 @@ sdm_eventFrame:SetScript("OnEvent", function (self, event, ...)
 				end
 			end
 		end
-		if sdm_countUpdateMacroEvents==2 then
+		if sdm_countUpdateMacrosEvents == 2 then
 			-- If the macros are loaded, update the number of button macros on the SDM frame
 			local numAccountMacros, numCharacterMacros = GetNumMacros()
 			sdm_macroLimitText:SetText("Global macros: "..numAccountMacros.."/36\nCharacter-specific macros: "..numCharacterMacros.."/18")
