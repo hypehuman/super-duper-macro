@@ -440,8 +440,12 @@ function sdm_UpdateList()
 			listItem.slotIcon:SetWidth(sdm_iconSize*64/36)
 			listItem.slotIcon:SetHeight(sdm_iconSize*64/36)
 			if mTab.type=="b" and sdm_UsedByThisChar(mTab) then
-				listItem:SetScript("OnDragStart", function(self, event, ...) 
-					PickupMacro(sdm_GetMacroIndex(sdm_macros[self.index].ID)) 
+				listItem:SetScript("OnDragStart", function(self, event, ...)
+					if not InCombatLockdown() then
+						PickupMacro(sdm_GetMacroIndex(sdm_macros[self.index].ID))
+					else
+						print(sdm_printPrefix.."You cannot pick up macros during combat.")
+					end
 				end)
 			else
 				listItem:SetScript("OnDragStart", nil)

@@ -32,9 +32,8 @@ sdm_eventFrame:SetScript("OnEvent", function (self, event, ...)
 		sdm_eventFrame:UnregisterEvent(event)
 		if (not sdm_macros) then
 			sdm_macros={} --type tokens: "b": button macro.  "f": floating macro.  "s": scripts.  "c": containers (folders)
-		end
 		-- when updating versions, make sure that the saved data are appropriately updated.
-		if sdm_CompareVersions(oldVersion, sdm_version) == 2 then
+		elseif sdm_CompareVersions(oldVersion, sdm_version) == 2 then
 			if sdm_CompareVersions(oldVersion,"1.6")==2 then -- Hopefully nobody is upgrading from a version this old.  If they are, they should download 2.1 and run that once before upgrading to 2.2.
 				sdm_macros={}
 			end
@@ -53,7 +52,7 @@ sdm_eventFrame:SetScript("OnEvent", function (self, event, ...)
 					end
 				end
 			end
-			if sdm_CompareVersions(oldVersion,"2.4.1")==2 then
+			if sdm_CompareVersions(oldVersion,"2.4.2")==2 then
 				for _,v in pairs(sdm_macros) do
 					if v.icon then
 						v.icon = sdm_defaultIcon
@@ -70,7 +69,7 @@ sdm_eventFrame:SetScript("OnEvent", function (self, event, ...)
 		if sdm_mainContents==nil then
 			sdm_ResetContainers()
 		end
-		sdm_iconSize=sdm_iconSize or 36
+		sdm_iconSize = sdm_iconSize or 36
 		if not sdm_listFilters then
 			sdm_listFilters={b=true, f=true, s=true, global=true}
 			sdm_listFilters["true"]=true
@@ -80,43 +79,47 @@ sdm_eventFrame:SetScript("OnEvent", function (self, event, ...)
 		sdm_iconSizeSlider:SetScript("OnValueChanged", function(self) sdm_iconSize = self:GetValue() sdm_UpdateList() end)
 		sdm_SelectItem(nil) --We want to start with no macro selected
 	elseif event=="UPDATE_MACROS" then
-		if sdm_countUpdateMacrosEvents < 2 then
-			sdm_countUpdateMacrosEvents=sdm_countUpdateMacrosEvents+1
-			if sdm_countUpdateMacrosEvents==2 then
-				local killOnSight = {}
-				local macrosToDelete = {}
-				local iIsPerCharacter=false
-				local thisID, mTab
-				for i=1,54 do --Check each macro to see if it's been orphaned by a previous installation of SDM.
-					if i==37 then iIsPerCharacter=true end
-					thisID = sdm_GetSdmID(i)
-					mTab = sdm_macros[thisID]
-					if thisID then --if the macro was created by SDM...
-						if killOnSight[thisID] then --if this ID is marked as kill-on-sight, kill it.
-							table.insert(macrosToDelete, i)
-						elseif (not mTab) or mTab.type~="b" or (not sdm_UsedByThisChar(mTab)) then --if this ID is not in use by this character as a button macro, kill it and mark this ID as KoS
-							table.insert(macrosToDelete, i)
-							killOnSight[thisID]=1
-						elseif (mTab.characters~=nil)~=iIsPerCharacter then --if the macro is in the wrong spot based on perCharacter, kill it, but give it a chance to find one in the right spot.
-							table.insert(macrosToDelete, i)
-						else --This macro is good and should be here.  Kill any duplicates.
-							killOnSight[thisID]=1
-						end
-					end
-				end
-				for i=getn(macrosToDelete),1,-1 do -- we delete in descending order so that the indices don't get messed up while we're deleting, which would cause us to delete the wrong macros
-					print(sdm_printPrefix.."Deleting extraneous macro "..macrosToDelete[i]..": "..GetMacroInfo(macrosToDelete[i]))
-					DeleteMacro(macrosToDelete[i])
-				end
-				for i,v in pairs(sdm_macros) do
-					if sdm_UsedByThisChar(sdm_macros[i]) then
-						sdm_SetUpMacro(sdm_macros[i])
+		-- SDM uses this event for two things.  Whenever you log into the game, UPDATE_MACROS is fired twice.  After the second firing, the macros are loaded.  This is when SDM deletes extraneous macros that it has created before.  This generally happens if you use different computers or if you don't use SDM for a while.  Whenever you log in, SDM makes sure that your macro list jives with the info in SavedVariables.
+		if sdm_countUpdateMacrosEvents == 0 then
+			sdm_countUpdateMacrosEvents = 1
+		elseif sdm_countUpdateMacrosEvents==1 then
+			sdm_countUpdateMacrosEvents = 2
+			local killOnSight = {}
+			local macrosToDelete = {}
+			local iIsPerCharacter=false
+			local thisID, mTab
+			for i=1,54 do --Check each macro to see if it's been orphaned by a previous installation of SDM.
+				if i==37 then iIsPerCharacter=true end
+				thisID = sdm_GetSdmID(i)
+				mTab = sdm_macros[thisID]
+				if thisID then --if the macro was created by SDM...
+					if killOnSight[thisID] then --if this ID is marked as kill-on-sight, kill it.
+						table.insert(macrosToDelete, i)
+					elseif (not mTab) or mTab.type~="b" or (not sdm_UsedByThisChar(mTab)) then --if this ID is not in use by this character as a button macro, kill it and mark this ID as KoS
+						table.insert(macrosToDelete, i)
+						killOnSight[thisID]=1
+					elseif (mTab.characters~=nil)~=iIsPerCharacter then --if the macro is in the wrong spot based on perCharacter, kill it, but give it a chance to find one in the right spot.
+						table.insert(macrosToDelete, i)
+					else --This macro is good and should be here.  Kill any duplicates.
+						killOnSight[thisID]=1
 					end
 				end
 			end
+			for i=getn(macrosToDelete),1,-1 do -- we delete in descending order so that the indices don't get messed up while we're deleting, which would cause us to delete the wrong macros
+				print(sdm_printPrefix.."Deleting extraneous macro "..macrosToDelete[i]..": "..GetMacroInfo(macrosToDelete[i]))
+				DeleteMacro(macrosToDelete[i])
+			end
+			for i,v in pairs(sdm_macros) do
+				if sdm_UsedByThisChar(sdm_macros[i]) then
+					sdm_SetUpMacro(sdm_macros[i])
+				end
+			end
 		end
-		local numAccountMacros, numCharacterMacros = GetNumMacros()
-		sdm_macroLimitText:SetText("Global macros: "..numAccountMacros.."/36\nCharacter-specific macros: "..numCharacterMacros.."/18")
+		if sdm_countUpdateMacroEvents==2 then
+			-- If the macros are loaded, update the number of button macros on the SDM frame
+			local numAccountMacros, numCharacterMacros = GetNumMacros()
+			sdm_macroLimitText:SetText("Global macros: "..numAccountMacros.."/36\nCharacter-specific macros: "..numCharacterMacros.."/18")
+		end
 	elseif event=="ADDON_LOADED" then
 		local addonName = ...;
 		if addonName=="Blizzard_MacroUI" then

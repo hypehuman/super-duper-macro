@@ -1,5 +1,5 @@
 Super Duper Macro
-version 2.4.1
+version 2.4.2
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -24,6 +24,10 @@ Special thanks to:
 
 
 Change Log
+
+2.4.2 (11/30/11)
+¥ÊFixed a minor error that occurs when running SDM for the first time
+¥ÊWhen attempting to pick up a macro during combat, you will get an error message created by SDM instead of Blizzard's "Interface action failed due to an addon".
 
 2.4.1 (11/30/11)
 ¥ÊUpdated for version 4.0 - you will lose any custom icons for your macros.  Sorry!
