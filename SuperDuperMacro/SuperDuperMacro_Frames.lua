@@ -69,10 +69,14 @@ f = CreateFrame("Button", "sdm_quitButton", sdm_mainFrame, "UIPanelCloseButton")
 f:SetPoint("TOPRIGHT", 3, -8)
 f:SetScript("OnClick", function() sdm_Quit() end)
 
+local linkButtonXOffs = 296
+local linkButtonYOffs = -29
+local linkButtonSize = 50
+
 f = CreateFrame("Button", "sdm_linkToMacroFrame", sdm_mainFrame, "UIPanelCloseButton")
-f:SetWidth(50)
-f:SetHeight(50)
-f:SetPoint("TOPLEFT", 296, -29)
+f:SetWidth(linkButtonSize)
+f:SetHeight(linkButtonSize)
+f:SetPoint("TOPLEFT", linkButtonXOffs, linkButtonYOffs)
 f:SetScript("OnClick", function() sdm_Quit(" ShowMacroFrame()") end)
 t = f:CreateTexture()
 t:SetDrawLayer("OVERLAY", 7)
@@ -703,7 +707,8 @@ f:Disable()
 function sdm_CreateDefaultMacroFrameButtons()
 	--Create the button that links from the default macro frame to the SDM frame
 	f = CreateFrame("Button", "$parent_linkToSDM", MacroFrame, "UIPanelCloseButton")
-	f:SetAllPoints(sdm_linkToMacroFrame)
+	f:SetWidth(linkButtonSize)
+	f:SetHeight(linkButtonSize)	f:SetPoint("TOPLEFT", linkButtonXOffs, linkButtonYOffs)
 	f:SetScript("OnClick", function() 
 		HideUIPanel(MacroFrame)
 		sdm_mainFrame:Show()

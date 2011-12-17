@@ -1,5 +1,5 @@
 Super Duper Macro
-version 2.4.3
+version 2.4.4
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -22,6 +22,9 @@ Special thanks to:
 
 
 Change Log
+
+2.4.4 (12/17/11)
+¥ÊFixed a bug where the button on the macro frame that opens SDM would sometimes appear in the wrong place.
 
 2.4.3 (11/30/11)
 ¥ÊRe-enabled the text that shows how many more button macros you can create
