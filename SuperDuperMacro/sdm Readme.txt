@@ -1,5 +1,5 @@
 Super Duper Macro
-version 2.4.4
+version 2.4.5
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -22,6 +22,10 @@ Special thanks to:
 
 
 Change Log
+
+2.4.5 (1/17/12)
+¥ÊFixed a bug that caused the "Change Name/Icon" window to sometimes be unresponsive
+¥ÊNow the "Change Name/Icon" always deselects the icon when it opens so that you don't accidentally change the icon of one of your macros
 
 2.4.4 (12/17/11)
 ¥ÊFixed a bug where the button on the macro frame that opens SDM would sometimes appear in the wrong place.

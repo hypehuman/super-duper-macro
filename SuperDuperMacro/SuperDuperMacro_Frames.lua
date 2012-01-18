@@ -334,8 +334,8 @@ sdm_newButton:SetPoint("LEFT", sdm_iconSizeSlider, "RIGHT", 20,0)
 f = CreateFrame("Frame", "sdm_changeIconFrame", sdm_mainFrame, UIParent)
 f:Hide()
 f:SetToplevel(true)
-f:SetSize(297,350)
-f:SetPoint("CENTER", 70,0)
+f:SetSize(293,60)
+f:SetPoint("TOP", 70,-100)
 f:SetBackdrop({
 	bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
 	edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",

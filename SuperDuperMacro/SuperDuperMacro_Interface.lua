@@ -612,7 +612,7 @@ function sdm_OnShow_changeIconFrame(f)
 		RefreshPlayerSpellIconInfo() -- You gotta do this, or there will be lots of errors!
 	end
 	local mTab = sdm_macros[sdm_currentEdit]
-	-- NYI: here would be a good place to select the current icon and scroll to that place in the list
+	MacroPopupFrame.selectedIcon = nil -- NYI: here would be a good place to select the current icon and scroll to that place in the list
 	f.prevonshow=MacroPopupFrame:GetScript("OnShow")
 	MacroPopupFrame:SetScript("OnShow", MacroPopupFrame_Update)
 	f.prevonenter=MacroPopupEditBox:GetScript("OnEnterPressed")
@@ -629,7 +629,7 @@ function sdm_OnShow_changeIconFrame(f)
 	end
 	MacroPopupFrame:ClearAllPoints()
 	--MacroPopupFrame:SetParent(f)
-	MacroPopupFrame:SetPoint("BOTTOM", f)
+	MacroPopupFrame:SetPoint("TOP", f, "BOTTOM", 0,15)
 	MacroPopupFrame:Show()
 	_,_,_,_,f.fontstring = MacroPopupFrame:GetRegions()
 	f.fontstring:SetText("        Different name on button:")
@@ -683,8 +683,8 @@ end
 function sdm_ChangeIconOkayed()
 	local mTab = sdm_macros[sdm_currentEdit]
 	local nameInputted = sdm_changeNameInput:GetText()
-	local iconInputted = sdm_GetSelectedIcon()
-	if (not nameInputted) or nameInputted=="" or (mTab.type~="c" and not iconInputted) then
+	local iconInputted = sdm_GetSelectedIcon() or mTab.icon
+	if (not nameInputted) or nameInputted=="" then
 		return
 	end
 	if (mTab.type=="b" or mTab.type=="f") and sdm_ContainsIllegalChars(nameInputted, true) then return end
