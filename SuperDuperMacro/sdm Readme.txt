@@ -1,5 +1,5 @@
 Super Duper Macro
-version 2.4.5
+version 2.4.6
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -22,6 +22,9 @@ Special thanks to:
 
 
 Change Log
+
+2.4.6 (2/20/12)
+¥ÊFixed a bug where the interface sometimes inappropriately prevented you from making new macros
 
 2.4.5 (1/17/12)
 ¥ÊFixed a bug that caused the "Change Name/Icon" window to sometimes be unresponsive
