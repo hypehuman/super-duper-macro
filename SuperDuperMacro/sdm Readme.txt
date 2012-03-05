@@ -1,5 +1,5 @@
 Super Duper Macro
-version 2.4.6
+version 2.5
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -22,6 +22,9 @@ Special thanks to:
 
 
 Change Log
+
+2.5 (3/4/12)
+¥ÊThis is a pre-release version that includes icons for long macros!  However, they don't update when you would expect them to.  They update whenever you use the macro, when you pick them up, and when the SDM window refreshes.
 
 2.4.6 (2/20/12)
 ¥ÊFixed a bug where the interface sometimes inappropriately prevented you from making new macros

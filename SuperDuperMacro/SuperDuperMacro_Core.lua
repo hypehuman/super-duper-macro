@@ -4,7 +4,7 @@ sdm_maxNumGlobalMacros = 36
 sdm_countUpdateMacrosEvents=0
 sdm_validChars = {1,2,3,4,5,6,7,8,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255}
 sdm_thisChar = {name=UnitName("player"), realm=GetRealmName()}
-sdm_doAfterCombat={} --a collection of strings that will be run as scripts when combat ends
+sdm_doAfterCombat = {} --a collection of strings that will be run as scripts when combat ends
 
 function sdm_SlashHandler(command)
 	if command=="" then
@@ -190,11 +190,13 @@ function sdm_SetUpMacro(mTab)
 	local ID = mTab.ID
 	local icon = mTab.icon
 	local charLimit = 255
+	local needsTracking = false
 	if type=="b" then
 		text="#sdm"..sdm_numToChars(ID).."\n"..text
 	end
 	local nextFrameName = "sdh"..sdm_numToChars(ID)
 	local frameText
+	sdm_StopTrackingLongMacro(ID)
 	if text:len()<=charLimit then
 		frameText = text
 	else
@@ -213,13 +215,20 @@ function sdm_SetUpMacro(mTab)
 			end
 			text=text:sub((text:find("\n") or text:len())+1) --remove the line from the text
 		end
+		if type=="b" and sdm_CanHaveIcon(text) then
+			-- we have extra text to put on hidden frames, but that hidden text can influence the icon
+			needsTracking = true
+		end
+		sdm_SetUpMacroFrames(nextFrameName, text, 1)
 	end
-	sdm_SetUpMacroFrames(nextFrameName, text, 1)
 	if type=="b" then
 		sdm_MakeBlizzardMacro(ID, (mTab.buttonName or mTab.name), icon, frameText, perCharacter)
 		sdm_MakeMacroFrame("sdb_"..mTab.name, frameText)
 	elseif type=="f" then
 		sdm_MakeMacroFrame("sdf_"..mTab.name, frameText)
+	end
+	if needsTracking then
+		sdm_StartTrackingLongMacro(ID, text, clickFrame)
 	end
 end
 
@@ -230,9 +239,10 @@ function sdm_UnSetUpMacro(mTab)
 			sdm_DoOrQueue("DeleteMacro(sdm_GetMacroIndex("..sdm_Stringer(mTab.ID).."))")
 		end
 	end
+	sdm_StopTrackingLongMacro(ID)
 end
 
-function sdm_SetUpMacroFrames(clickerName, text, currentLayer) --returns the frame to be clicked
+function sdm_SetUpMacroFrames(clickerName, text, currentLayer)
 	local currentFrame=1
 	local frameText=""
 	local nextLayerText=""
@@ -253,11 +263,11 @@ function sdm_SetUpMacroFrames(clickerName, text, currentLayer) --returns the fra
 		text=text:sub((text:find("\n") or text:len())+1) --remove the line from the text
 	end
 	if currentFrame==1 then
-		return sdm_MakeMacroFrame(clickerName, frameText)
+		sdm_MakeMacroFrame(clickerName, frameText)
 	else
 		sdm_MakeMacroFrame(clickerName.."_"..currentLayer.."_"..currentFrame, frameText) --repeated from above; just finishing off this frame
 		nextLayerText = nextLayerText.."\n"..sdm_GetLinkText(clickerName.."_"..currentLayer.."_"..currentFrame)
-		return sdm_SetUpMacroFrames(clickerName, nextLayerText, currentLayer+1)
+		sdm_SetUpMacroFrames(clickerName, nextLayerText, currentLayer+1)
 	end
 end
 

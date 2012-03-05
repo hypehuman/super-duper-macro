@@ -428,6 +428,7 @@ function sdm_UpdateList()
 			sdm_SetTooltip(listItem, "Alt-click for folder options and instructions")
 		else
 			if mTab.icon:upper() == sdm_defaultIcon and mTab.type=="b" and (sdm_UsedByThisChar(mTab)) then
+				sdm_UpdateLongMacroIcon(nil, mTab.ID)
 				_,texture = GetMacroInfo(sdm_GetMacroIndex(mTab.ID))
 			else
 				texture = "INTERFACE\\ICONS\\"..mTab.icon
