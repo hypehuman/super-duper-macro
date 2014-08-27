@@ -129,12 +129,12 @@ function sdm_DowngradeButtonClicked()
 	sdm_SelectItem(nil) -- deselect the macro in the SDM frame
 	sdm_Quit(" ShowMacroFrame()") -- show the standard macro frame
 	local buttonName = "MacroButton"
-	if index<=36 then -- global macro
+	if index<=100 then -- global macro
 		MacroFrameTab1:Click()
 		buttonName = buttonName..index
 	else -- character-specific macro
 		MacroFrameTab2:Click()
-		buttonName = buttonName..(index-36)
+		buttonName = buttonName..(index-100)
 	end
 	getglobal(buttonName):Click() -- select the newly downgraded macro
 end
@@ -437,8 +437,8 @@ function sdm_UpdateList()
 				listItem.icon:SetWidth(sdm_iconSize)
 				listItem.icon:SetHeight(sdm_iconSize)
 			end
-			listItem.slotIcon:SetWidth(sdm_iconSize*64/36)
-			listItem.slotIcon:SetHeight(sdm_iconSize*64/36)
+			listItem.slotIcon:SetWidth(sdm_iconSize*64/100)
+			listItem.slotIcon:SetHeight(sdm_iconSize*64/100)
 			if mTab.type=="b" and sdm_UsedByThisChar(mTab) then
 				listItem:SetScript("OnDragStart", function(self, event, ...)
 					if not InCombatLockdown() then
@@ -997,7 +997,7 @@ end
 
 --[[ Interface-related Variables ]]--
 
-sdm_iconSpacing=5/36
+sdm_iconSpacing=5/100
 sdm_listLocked=false --if this is true, clicking on a macro in the SDM list will not select it.
 if (IsAddOnLoaded("Blizzard_MacroUI")) then
 	sdm_macroUILoaded=true --the default macro UI, which normally loads when you type /macro

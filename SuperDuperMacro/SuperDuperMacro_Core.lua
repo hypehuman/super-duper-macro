@@ -1,6 +1,6 @@
 sdm_printPrefix = "|cffff7700Super Duper Macro|r - "
 sdm_defaultIcon = "INV_MISC_QUESTIONMARK"
-sdm_maxNumGlobalMacros = 36
+sdm_maxNumGlobalMacros = 100
 sdm_countUpdateMacrosEvents=0
 sdm_validChars = {1,2,3,4,5,6,7,8,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255}
 sdm_thisChar = {name=UnitName("player"), realm=GetRealmName()}
@@ -70,7 +70,7 @@ sdm_eventFrame:SetScript("OnEvent", function (self, event, ...)
 		if sdm_mainContents==nil then
 			sdm_ResetContainers()
 		end
-		sdm_iconSize = sdm_iconSize or 36
+		sdm_iconSize = sdm_iconSize or 100
 		if not sdm_listFilters then
 			sdm_listFilters={b=true, f=true, s=true, global=true}
 			sdm_listFilters["true"]=true
@@ -89,8 +89,8 @@ sdm_eventFrame:SetScript("OnEvent", function (self, event, ...)
 			local macrosToDelete = {}
 			local iIsPerCharacter=false
 			local thisID, mTab
-			for i=1,54 do --Check each macro to see if it's been orphaned by a previous installation of SDM.
-				if i==37 then iIsPerCharacter=true end
+			for i=1,118 do --Check each macro to see if it's been orphaned by a previous installation of SDM.
+				if i==101 then iIsPerCharacter=true end
 				thisID = sdm_GetSdmID(i)
 				mTab = sdm_macros[thisID]
 				if thisID then --if the macro was created by SDM...
@@ -119,7 +119,7 @@ sdm_eventFrame:SetScript("OnEvent", function (self, event, ...)
 		if sdm_countUpdateMacrosEvents == 2 then
 			-- If the macros are loaded, update the number of button macros on the SDM frame
 			local numAccountMacros, numCharacterMacros = GetNumMacros()
-			sdm_macroLimitText:SetText("Global macros: "..numAccountMacros.."/36\nCharacter-specific macros: "..numCharacterMacros.."/18")
+			sdm_macroLimitText:SetText("Global macros: "..numAccountMacros.."/100\nCharacter-specific macros: "..numCharacterMacros.."/18")
 		end
 	elseif event=="ADDON_LOADED" then
 		local addonName = ...;
@@ -168,7 +168,7 @@ function sdm_GetSdmID(macroIndex)
 end
 
 function sdm_GetMacroIndex(sdmID)
-	for i=1,54 do
+	for i=1,118 do
 		if sdm_GetSdmID(i)==sdmID then
 			return i
 		end
@@ -329,10 +329,10 @@ function sdm_CheckCreationSafety(type, name, character) --returns the mTab of th
 		return false
 	end
 	if type=="b" then
-		if (not character) and GetMacroInfo(36) then
-			print(sdm_printPrefix.."You already have 36 global macros.")
+		if (not character) and GetMacroInfo(100) then
+			print(sdm_printPrefix.."You already have 100 global macros.")
 			return false
-		elseif character and character.name==sdm_thisChar.name and character.realm==sdm_thisChar.realm and GetMacroInfo(54) then
+		elseif character and character.name==sdm_thisChar.name and character.realm==sdm_thisChar.realm and GetMacroInfo(118) then
 			print(sdm_printPrefix.."You already have 18 character-specific macros.")
 			return false
 		end
@@ -401,7 +401,7 @@ function sdm_UpgradeMacro(index) -- Upgrades the given standard macro to a Super
 	end
 	local name = GetMacroInfo(index)
 	local character
-	if index > 36 then
+	if index > 100 then
 		character = sdm_thisChar
 	end
 	local safe = sdm_CheckCreationSafety("b", name, character)
