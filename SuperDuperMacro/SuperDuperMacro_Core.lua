@@ -302,12 +302,14 @@ function sdm_CompareVersions(firstString, secondString) --returns 1 if the first
 			end
 			numbers[i] = tonumber(numbers[i])
 		end
-		if numbers[1] > numbers[2] then
-			return 1
-		elseif numbers[2] > numbers[1] then
-			return 2
-		elseif (not strings[1]) and (not strings[2]) then
-			return 0
+		if type(numbers[1])=="number" and type(numbers[2])=="number" then
+			if numbers[1] > numbers[2] then
+				return 1
+			elseif numbers[2] > numbers[1] then
+				return 2
+			elseif (not strings[1]) and (not strings[2]) then
+				return 0
+			end
 		end
 	end
 end
