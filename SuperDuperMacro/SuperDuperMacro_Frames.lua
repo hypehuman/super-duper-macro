@@ -750,7 +750,7 @@ function sdm_CreateDefaultMacroFrameButtons()
 	f:SetHeight(20)
 	f:SetPoint("TOPLEFT", 25, -18)
 	f:SetScript("OnClick", function() 
-		sdm_buttonTextCheckBoxClicked(MacroPopupFrame_buttonTextCheckBox:GetChecked()==1) 
+		sdm_buttonTextCheckBoxClicked(MacroPopupFrame_buttonTextCheckBox:GetChecked()) 
 	end)
 	f:Hide()
 

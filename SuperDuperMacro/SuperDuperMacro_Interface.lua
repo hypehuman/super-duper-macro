@@ -697,7 +697,7 @@ function sdm_ChangeIconOkayed()
 	local oldIcon = mTab.icon
 	mTab.name = nameInputted
 	sdm_ChangeContainer(mTab, mTab.container) --place the item in itself.  This is so that it gets re-sorted.
-	if MacroPopupFrame_buttonTextCheckBox:GetChecked()==1 then
+	if MacroPopupFrame_buttonTextCheckBox:GetChecked() then
 		mTab.buttonName = MacroPopupEditBox:GetText()
 		if mTab.buttonName=="" then
 			mTab.buttonName=" "
@@ -738,7 +738,7 @@ function sdm_buttonTextCheckBoxClicked(checked)
 end
 
 function sdm_CollapseAllButtonClicked(self)
-	local allOpenOrClosed = self:GetChecked()==nil
+	local allOpenOrClosed = not self:GetChecked()
 	for _,v in ipairs(sdm_macros) do
 		if v.type=="c" then
 			v.open = allOpenOrClosed
