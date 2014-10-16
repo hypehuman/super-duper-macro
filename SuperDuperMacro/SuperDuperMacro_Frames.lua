@@ -736,7 +736,7 @@ function sdm_CreateDefaultMacroFrameButtons()
 	f:SetScript("OnClick", sdm_UpgradeButtonClicked)
 	sdm_SetTooltip(f, "Turn the selected macro into a Super Duper Macro, allowing you to make it longer")
 
-	-- The following three frames are only showed when SDM's "Change Name/Icon" button is clicked.  Clicking this button hijack's the default MacroPopupFrame and modifies it to our needs.
+	-- The following three frames are only showed when SDM's "Change Name/Icon" button is clicked.  Clicking this button hijacks the default MacroPopupFrame and modifies it to our needs.
 
 	-- Create the "Different name on button" checkbox
 	f = CreateFrame("CheckButton", "$parent_buttonTextCheckBox", MacroPopupFrame, "UICheckButtonTemplate")
