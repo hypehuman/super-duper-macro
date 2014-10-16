@@ -129,12 +129,12 @@ function sdm_DowngradeButtonClicked()
 	sdm_SelectItem(nil) -- deselect the macro in the SDM frame
 	sdm_Quit(" ShowMacroFrame()") -- show the standard macro frame
 	local buttonName = "MacroButton"
-	if index<=36 then -- global macro
+	if index<=MAX_ACCOUNT_MACROS then -- global macro
 		MacroFrameTab1:Click()
 		buttonName = buttonName..index
 	else -- character-specific macro
 		MacroFrameTab2:Click()
-		buttonName = buttonName..(index-36)
+		buttonName = buttonName..(index-MAX_ACCOUNT_MACROS)
 	end
 	getglobal(buttonName):Click() -- select the newly downgraded macro
 end

@@ -1,5 +1,5 @@
 Super Duper Macro
-version 2.4.6
+version 2.6
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -22,6 +22,9 @@ Special thanks to:
 
 
 Change Log
+
+2.6 (10/16/14)
+¥ÊFixes character-specific macros, which broke when Warlords gave us more global macros.
 
 2.4.6 (2/20/12)
 ¥ÊFixed a bug where the interface sometimes inappropriately prevented you from making new macros
