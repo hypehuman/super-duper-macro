@@ -133,7 +133,13 @@ f:SetText("Change Name/Icon")
 f:SetWidth(140)
 f:SetHeight(22)
 f:SetPoint("RIGHT", sdm_usageButton, "LEFT")
-f:SetScript("OnClick", function() sdm_changeIconFrame:Show() end)
+f:SetScript("OnClick", function()
+	if MacroPopupFrame ~= nil and MacroPopupFrame:IsShown() then
+		print(sdm_printPrefix.."The change macro name/icon frame is already open.")
+	else
+		sdm_changeIconFrame:Show()
+	end
+end)
 sdm_AddToExclusiveGroup(f, "centerwindows", true)
 
 f = CreateFrame("Button", "sdm_saveAsButton", sdm_mainFrame, "UIPanelButtonTemplate")
