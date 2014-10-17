@@ -1,5 +1,5 @@
 Super Duper Macro
-version 2.6
+version 2.6.1
 by hypehuman
 
 Check for updates at http://www.wowinterface.com/downloads/info10496
@@ -22,6 +22,9 @@ Special thanks to:
 
 
 Change Log
+
+2.6.1 (10/16/14)
+¥ÊFixes "Different name on button" and "Expand/collapse all folders"
 
 2.6 (10/16/14)
 ¥ÊFixes character-specific macros, which broke when Warlords gave us more global macros.
