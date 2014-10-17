@@ -133,7 +133,13 @@ f:SetText("Change Name/Icon")
 f:SetWidth(140)
 f:SetHeight(22)
 f:SetPoint("RIGHT", sdm_usageButton, "LEFT")
-f:SetScript("OnClick", function() sdm_changeIconFrame:Show() end)
+f:SetScript("OnClick", function()
+	if MacroPopupFrame ~= nil and MacroPopupFrame:IsShown() then
+		print(sdm_printPrefix.."The change macro name/icon frame is already open.")
+	else
+		sdm_changeIconFrame:Show()
+	end
+end)
 sdm_AddToExclusiveGroup(f, "centerwindows", true)
 
 f = CreateFrame("Button", "sdm_saveAsButton", sdm_mainFrame, "UIPanelButtonTemplate")
@@ -736,7 +742,7 @@ function sdm_CreateDefaultMacroFrameButtons()
 	f:SetScript("OnClick", sdm_UpgradeButtonClicked)
 	sdm_SetTooltip(f, "Turn the selected macro into a Super Duper Macro, allowing you to make it longer")
 
-	-- The following three frames are only showed when SDM's "Change Name/Icon" button is clicked.  Clicking this button hijack's the default MacroPopupFrame and modifies it to our needs.
+	-- The following three frames are only showed when SDM's "Change Name/Icon" button is clicked.  Clicking this button hijacks the default MacroPopupFrame and modifies it to our needs.
 
 	-- Create the "Different name on button" checkbox
 	f = CreateFrame("CheckButton", "$parent_buttonTextCheckBox", MacroPopupFrame, "UICheckButtonTemplate")
@@ -744,7 +750,7 @@ function sdm_CreateDefaultMacroFrameButtons()
 	f:SetHeight(20)
 	f:SetPoint("TOPLEFT", 25, -18)
 	f:SetScript("OnClick", function() 
-		sdm_buttonTextCheckBoxClicked(MacroPopupFrame_buttonTextCheckBox:GetChecked()==1) 
+		sdm_buttonTextCheckBoxClicked(MacroPopupFrame_buttonTextCheckBox:GetChecked()) 
 	end)
 	f:Hide()
 
