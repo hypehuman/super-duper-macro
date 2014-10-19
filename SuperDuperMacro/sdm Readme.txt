@@ -15,6 +15,8 @@ This mod allows you to make two types of macros:
 
 Suggestions and bug reports are always welcome.  You can post comments on the wowinterface.com page for this addon, or if you want to add something yourself, you can upload it in the "Optional Files" tab.
 
+Alternately, create a pull request to my GitHub repo: https://github.com/hypehuman/super-duper-macro
+
 Special thanks to:
 ¥ SuperMacro, which inspired the idea for this addon.
 ¥ÊAll the regulars on the UI & Macro forums, who have been guiding me through this process.
