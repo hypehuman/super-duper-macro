@@ -1,14 +1,29 @@
-*Note that this document uses "SDM" to mean "Super Duper Macro".*
+*Note that this document uses*
+
+* "SDM" to mean "Super Duper Macro"
+* "WoW" to mean "World of Warcraft"
+
+
+
+### 2016-04-21 - 6.2.4-21463
+
+spiralofhope's fork - https://github.com/spiralofhope/SuperDuperMacro
+
+* **Note that no Lua code has been changed!**
+* Added tagging to the git repository, for all previous releases mentioned with `git log`.
+  *  This allows a user to visit the git repository to easily view any of those tagged versions.
+* Documentation update.
+* Changing SDM's version numbering scheme to show what version of WoW it's been most recently tested-against.
 
 
 ### 2014-10-16 - 2.6.1
 
-* Fixes "Different name on button" and "Expand/collapse all folders"
+* Fixes "Different name on button" and "Expand/collapse all folders".
 
 
 ### 2014-10-16 - 2.6
 
-* Fixes character-specific macros, which broke when World of Warcraft 6 (Warlords of Draenor) gave us more global macros.
+* Fixes character-specific macros, which broke when WoW 6 (Warlords of Draenor) gave us more global macros.
 
 
 ### 2012-02-20 - 2.4.6
@@ -40,7 +55,7 @@
 
 ### 2011-11-30 - 2.4.1
 
-* Updated for World of Warcraft 4.0 (Cataclysm)
+* Updated for WoW 4.0 (Cataclysm)
   *  You will lose any custom icons for your macros.  Sorry!
 
 
