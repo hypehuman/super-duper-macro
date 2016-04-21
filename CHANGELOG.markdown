@@ -69,13 +69,13 @@ Change Log
 
 1.7 (2/8/09)
 * Made the macro list better
- - Color-coded the different macro types
- - Created a slider below the menu to adjust the size of the icons
- - Added drop-down menus to filter the list by type and character
+  *  Color-coded the different macro types
+  *  Created a slider below the menu to adjust the size of the icons
+  *  Added drop-down menus to filter the list by type and character
 * Changed the storage of macros in preparation for a future version that will include a sortable macro list with user-defined folders
 * Bug fixes
- - The save confirmation dialog box now shows while dead
- - Fixed a typo in the "Usage..." text for scripts
+  *  The save confirmation dialog box now shows while dead
+  *  Fixed a typo in the "Usage..." text for scripts
 
 1.6.1 (1/27/09)
 * Fixed a serious bug that happened upon login after leaving "different name on button" blank.  You may now safely leave it blank if you wish to show no text on the button.
@@ -117,18 +117,18 @@ Change Log
 * SDM now keeps track of the button macros it creates, and deletes orphaned ones upon login. If you are upgrading from a previous version, you can delete the old button macros that SDM created (the text of the new ones all start with "#sdm").
 * Because of this, SDM will no longer ever replace your macros, and their names do not need to be unique at all.  Floating macros and Scripts still have some restrictions on naming, you will get a warning it you try to violate them.
 * Added many UI improvements to make working with the addon more intuitive:
- - Pressing tab will now add four spaces
- - Pressing enter will now be equivalent to the appropriate button click
- - Moved some buttons around to more appropriate places
- - Added buttons that link between the regular macro window and the SDM window
- - Buttons will now "gray out" when appropriate
- - The SDM window will now become unresponsive during confirmation dialogs
+  *  Pressing tab will now add four spaces
+  *  Pressing enter will now be equivalent to the appropriate button click
+  *  Moved some buttons around to more appropriate places
+  *  Added buttons that link between the regular macro window and the SDM window
+  *  Buttons will now "gray out" when appropriate
+  *  The SDM window will now become unresponsive during confirmation dialogs
 
 1.2 (12/13/08)
-Fixed a bug that caused major problems when there were no macros in the list.
+* Fixed a bug that caused major problems when there were no macros in the list.
 
 1.1 (12/12/08)
-More UI improvements. Some UI elements are still placeholders.
+* More UI improvements. Some UI elements are still placeholders.
 
 1.0 (11/13/08)
-just two minor updates in code to make it 3.0-ready. More UI improvements to come!
+* just two minor updates in code to make it 3.0-ready. More UI improvements to come!
