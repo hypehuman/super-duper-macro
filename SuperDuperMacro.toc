@@ -1,9 +1,21 @@
-## Interface: 60000
-## Title : Super Duper Macro
-## Notes: Enables creation of incredibly long macros.
-## Author: hypehuman
-## Version: 2.6.1
-## SavedVariables: sdm_version, sdm_listFilters, sdm_iconSize, sdm_mainContents, sdm_macros
+# SuperDuperMacro has most recently been tested against:
+#   Version 7.3.0 (24920) (Release x64)
+#   Aug 28 2017
+
+# The interface number can be learned with:
+#   /dump select( 4, GetBuildInfo() )
+## Interface:       70200
+## Author:          spiralofhope, hypehuman
+## Title:           Super Super Macro
+## Notes:           Enables the creation of incredibly long macros.
+## Version:         7.3.0.1
+## SavedVariables:  sdm_version, sdm_listFilters, sdm_iconSize, sdm_mainContents, sdm_macros
+## DefaultState:    enabled
+
+## X-Date:          2017-08-29
+## X-Website:       https://github.com/spiralofhope/SuperDuperMacro/
+## X-Feedback:      https://github.com/spiralofhope/SuperDuperMacro/issues/new
+
 SuperDuperMacro_Core.lua
 SuperDuperMacro_Interface.lua
 SuperDuperMacro_Sharing.lua

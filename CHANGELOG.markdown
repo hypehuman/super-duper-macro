@@ -1,3 +1,7 @@
+# Changelog
+
+`git log` is another good way to peer into the innards of this repository.
+
 *Note that this document uses*
 
 * "SDM" to mean "Super Duper Macro"
@@ -5,15 +9,26 @@
 
 
 
+## 7.3 series
+
+### 7.3.0.1
+
+- Commented-out PlaySound(), because it will now only accept soundkit IDs.
+  -  It will be updated later.
+
+
+# Old notes
+
+
 ### 2016-04-21 - 6.2.4-21463
 
 spiralofhope's fork - https://github.com/spiralofhope/SuperDuperMacro
 
-* **Note that no Lua code has been changed!**
-* Added tagging to the git repository, for all previous releases mentioned with `git log`.
-  *  This allows a user to visit the git repository to easily view any of those tagged versions.
-* Documentation update.
-* Changing SDM's version numbering scheme to show what version of WoW it's been most recently tested-against.
+- **Note that no Lua code has been changed!**
+- Added tagging to the git repository, for all previous releases mentioned with `git log`.
+  -  This allows a user to visit the git repository to easily view any of those tagged versions.
+- Documentation update.
+- Changing SDM's version numbering scheme to show what version of WoW it's been most recently tested-against.
 
 
 ### 2014-10-16 - 2.6.1
