@@ -1,7 +1,3 @@
-**NOTE** - This addon is largely unchanged from hypehuman's efforts!
-
-
-
 # Super Duper Macro
 
 A 
@@ -20,6 +16,18 @@ A fork of
  · [home page](http://blog.spiralofhope.com/?p=18050)
  · [releases](https://github.com/spiralofhope/SuperDuperMacro/releases)
  · [latest beta](https://github.com/spiralofhope/SuperDuperMacro/archive/master.zip)
+
+
+
+# Notes
+
+- This addon is largely unchanged from hypehuman's efforts!
+- I am a documentation guy, not a programmer.  It is unlikely I can make any real changes.
+  -  If you are a developer, I am happy to:
+     -  Accept GitHub pull requests.
+     -  Add you as a contributor on GitHub.
+     -  Hand this project over!
+
 
 
 # Installation
