@@ -11,6 +11,11 @@
 
 ## 7.3 series
 
+### 7.3.0.2
+
+- Corrected the TOC
+
+
 ### 7.3.0.1
 
 - Commented-out PlaySound(), because it will now only accept soundkit IDs.
