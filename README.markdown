@@ -6,8 +6,9 @@
 
 A 
 [World of Warcraft](http://blog.spiralofhope.com/?p=2987) 
-[addon](http://blog.spiralofhope.com/?p=17845) 
-which enables the creation of incredibly long macros.
+[addon](http://blog.spiralofhope.com/?p=17845).
+
+Enables the creation of incredibly long macros.
 
 A fork of 
 [hypehuman](http://www.wowinterface.com/forums/member.php?action=getinfo&userid=52682)
