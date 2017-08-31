@@ -7,7 +7,9 @@
 A 
 [World of Warcraft](http://blog.spiralofhope.com/?p=2987) 
 [addon](http://blog.spiralofhope.com/?p=17845) 
-which simplifies the game buttons, giving much more screen space.  A fork of 
+which enables the creation of incredibly long macros.
+
+A fork of 
 [hypehuman](http://www.wowinterface.com/forums/member.php?action=getinfo&userid=52682)
 's 
 [Super Duper Macro](http://www.wowinterface.com/downloads/info10496)
