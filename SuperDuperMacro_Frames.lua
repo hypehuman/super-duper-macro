@@ -4,7 +4,7 @@ local f, fs, t
 --[[ Creation of the main SDM window ]]--
 -----------------------------------------
 
-f = CreateFrame("Frame", "sdm_mainFrame", UIParent)
+f = CreateFrame("Frame", "sdm_mainFrame", nil, UIParent)
 f:Hide()
 f:SetMovable(true)
 f:SetSize(768,447)

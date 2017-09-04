@@ -11,6 +11,11 @@
 
 ## 7.3 series
 
+### 7.3.0.3
+
+- Fixed issue #3 - Fix child window scaling
+
+
 ### 7.3.0.2
 
 - Corrected the TOC
