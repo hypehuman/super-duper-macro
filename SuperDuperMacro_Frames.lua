@@ -4,7 +4,7 @@ local f, fs, t
 --[[ Creation of the main SDM window ]]--
 -----------------------------------------
 
-f = CreateFrame("Frame", "sdm_mainFrame", UIParent)
+f = CreateFrame("Frame", "sdm_mainFrame", nil, UIParent)
 f:Hide()
 f:SetMovable(true)
 f:SetSize(768,447)
@@ -12,11 +12,11 @@ f:ClearAllPoints()
 f:SetPoint("TOPLEFT", 0, -104)
 sdm_MakeDraggable(f)
 f:SetScript("OnShow", function(self)
-	PlaySound "igCharacterInfoOpen"
+	--PlaySound "igCharacterInfoOpen"
 	sdm_UpdateList()
 end)
 f:SetScript("OnHide", function(self)
-	PlaySound "igCharacterInfoClose"
+	--PlaySound "igCharacterInfoClose"
 	sdm_currentlyPlacing=nil
 	sdm_StopMove()
 	self:ClearAllPoints()
